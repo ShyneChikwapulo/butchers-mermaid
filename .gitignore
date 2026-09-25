@@ -1,0 +1,32 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Rider / VS Code
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# macOS
+.DS_Store
+._*
+
+# User secrets (never commit)
+secrets.json
+
+# Local SQLite
+*.db
+*.db-shm
+*.db-wal
+
+# Build output
+publish/
+artifacts/
+
+# Logs
+*.log
