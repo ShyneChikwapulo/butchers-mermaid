@@ -1,0 +1,26 @@
+
+.gold-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-4);
+    padding: var(--sp-2) 0;
+    color: var(--color-gold);
+}
+
+.gold-divider__rule {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-gold));
+}
+
+.gold-divider__rule--reverse {
+    background: linear-gradient(90deg, var(--color-gold), transparent);
+}
+
+.gold-divider__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-gold);
+}

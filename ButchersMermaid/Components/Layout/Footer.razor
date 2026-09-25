@@ -1,0 +1,58 @@
+
+<footer class="site-footer">
+    <div class="site-footer__inner">
+        <div class="site-footer__top">
+            <a href="/" class="site-footer__brand">
+                <img src="images/brand/logo.png" alt="The Butcher's Mermaid" class="site-footer__logo" />
+                <div>
+                    <p class="site-footer__name">The Butcher's Mermaid</p>
+                    <p class="site-footer__location">Hout Bay · Cape Town</p>
+                </div>
+            </a>
+
+            <nav class="site-footer__links">
+                @foreach (var link in FooterLinks)
+                {
+                    <a href="@link.Href" class="site-footer__link">@link.Label</a>
+                }
+            </nav>
+        </div>
+
+        <div class="site-footer__bottom">
+            <p class="site-footer__copyright">
+                &copy; @DateTime.Now.Year The Butcher's Mermaid. Shop 1, Red Sails Building, 26 Main Road, Hout Bay.
+            </p>
+            <div class="site-footer__legal">
+                <a href="https://www.dineplan.com/restaurant/the-butchers-mermaid"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="site-footer__legal-link site-footer__legal-link--gold">
+                    Book via Dineplan
+                </a>
+                <span class="site-footer__sep">·</span>
+                <a href="https://www.ubereats.com/za/store/the-butchers-mermaid/WdjWPxY4RiyUx_Du-jwVdA"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="site-footer__legal-link">
+                    Order on Uber Eats
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+@code {
+    private record FooterItem(string Label, string Href);
+
+    private static readonly FooterItem[] FooterLinks =
+    {
+        new("The Butchery", "/butchery"),
+        new("Restaurant",   "/restaurant"),
+        new("Deli & Bar",   "/deli"),
+        new("From the Sea", "/sea"),
+        new("Menu",         "/menu"),
+        new("Wholesale",    "/wholesale"),
+        new("About",        "/about"),
+        new("Contact",      "/contact"),
+    };
+}

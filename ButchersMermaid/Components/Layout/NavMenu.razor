@@ -1,30 +1,53 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">ButchersMermaid</a>
+﻿
+@rendermode InteractiveServer
+
+<nav class="site-nav">
+    <div class="site-nav__inner">
+        <a href="/" class="site-nav__brand">
+            <img src="images/brand/logo.png" alt="The Butcher's Mermaid" class="site-nav__logo" />
+            <span class="site-nav__wordmark">
+                <span class="site-nav__wordmark-the">The</span>
+                <span class="site-nav__wordmark-name">Butcher's Mermaid</span>
+            </span>
+        </a>
+
+        <button class="site-nav__toggle" @onclick="ToggleMobile" aria-label="Toggle navigation" aria-expanded="@_mobileOpen">
+            <span class="site-nav__toggle-bar @(_mobileOpen ? "is-open-top" : "")"></span>
+            <span class="site-nav__toggle-bar @(_mobileOpen ? "is-hidden" : "")"></span>
+            <span class="site-nav__toggle-bar @(_mobileOpen ? "is-open-bottom" : "")"></span>
+        </button>
+
+        <div class="site-nav__links @(_mobileOpen ? "is-open" : "")">
+            @foreach (var link in NavLinks)
+            {
+                <NavLink class="site-nav__link" href="@link.Href" Match="@link.Match">
+                    @link.Label
+                </NavLink>
+            }
+            <a href="https://www.dineplan.com/restaurant/the-butchers-mermaid"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="site-nav__cta">
+                Reserve a Table
+            </a>
+        </div>
     </div>
-</div>
+</nav>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+@code {
+    private bool _mobileOpen;
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
+    private void ToggleMobile() => _mobileOpen = !_mobileOpen;
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+    private record NavItem(string Label, string Href, NavLinkMatch Match);
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-    </nav>
-</div>
-
+    private static readonly NavItem[] NavLinks =
+    {
+        new("The Butchery", "/butchery",   NavLinkMatch.Prefix),
+        new("Restaurant",   "/restaurant", NavLinkMatch.Prefix),
+        new("Deli & Bar",   "/deli",       NavLinkMatch.Prefix),
+        new("From the Sea", "/sea",        NavLinkMatch.Prefix),
+        new("Menu",         "/menu",       NavLinkMatch.Prefix),
+        new("Find Us",      "/contact",    NavLinkMatch.Prefix),
+    };
+}
