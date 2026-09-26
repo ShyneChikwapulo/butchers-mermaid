@@ -63,7 +63,7 @@
 ## Burgers
 
 * Smash Burger — double smash, cheese, lettuce & gherkins — R 140
-* Classic Beef OR Lamb — Patty, lettuce, tomato, onion, gherkins — R 1406
+* Classic Beef OR Lamb — Patty, lettuce, tomato, onion, gherkins — R 140
 * Chicken Fillet Burger — FreeRange Chicken (grilled), lettuce, tomato, onion, gherkins — R 175
 * Signature Burger — Double Beef Patty, bacon & cheese, lettuce, tomato, onion, gherkins — R 190
 * Wagyu Burger — caramelized onions, aoli, cheese, with lettuce, tomato, onions & gherkins — R 210
