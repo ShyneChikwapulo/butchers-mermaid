@@ -132,3 +132,11 @@
 * Chicken Strips — FreeRange Chicken served with fries — R 90
 * Classic Beef / Lamb Burger — 100g beef patty served with fries — R 100
 * Pasta Bolognese — Homemade bolognese with Beef Mince (Spaghetti | GLUTEN FREE +R15) — R 110
+
+## Notes for owner review
+
+- "Mashed Potatoe" (Sides) — typo. Confirm original spelling or fix to "Mashed Potato" on site.
+- "R SEE BOARD" (Canadian Sole Meunière, Fish) — confirm what to display on the website (suggest: "Market price").
+- "CHANGE to FR Chicken OR Mince R180" (Cheesy Steak Nachos, Tapas) — appears to be an internal note. Confirm whether this is an option customers can order or a menu edit-in-progress.
+- "Sirloin Steak Strips" (Asian Beef Salad, Salads) vs "Sirloin Steak" (elsewhere) — confirm consistent naming.
+- Tartare prices in `R X | Y` format — confirm whether the second number is a portion size or a price. Suggested fix: rewrite as `R 165 (150g) | R 300 (300g)` or equivalent.
