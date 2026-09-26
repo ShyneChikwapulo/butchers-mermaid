@@ -1,0 +1,36 @@
+<section class="page-hero">
+    <div class="page-hero__bg" style="background-image: url('@BackgroundImage');"></div>
+    <div class="page-hero__overlay"></div>
+
+    <div class="page-hero__content">
+        <p class="eyebrow">@Eyebrow</p>
+        <h1 class="page-hero__title">@Title</h1>
+
+        @if (ShowDivider)
+        {
+            <GoldDivider />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Subtitle))
+        {
+            <p class="page-hero__subtitle">@Subtitle</p>
+        }
+    </div>
+</section>
+
+@code {
+    /// <summary>Path to the banner image, relative to wwwroot.</summary>
+    [Parameter, EditorRequired] public string BackgroundImage { get; set; } = string.Empty;
+
+    /// <summary>Small uppercase text above the title.</summary>
+    [Parameter, EditorRequired] public string Eyebrow { get; set; } = string.Empty;
+
+    /// <summary>Main heading.</summary>
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+
+    /// <summary>Optional lead paragraph below the title.</summary>
+    [Parameter] public string? Subtitle { get; set; }
+
+    /// <summary>Whether to show the gold shell divider between title and subtitle.</summary>
+    [Parameter] public bool ShowDivider { get; set; } = true;
+}

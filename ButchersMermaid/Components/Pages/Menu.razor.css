@@ -1,0 +1,120 @@
+
+.menu {
+    background: var(--color-charcoal);
+}
+
+.menu__loading,
+.menu__empty {
+    text-align: center;
+    color: var(--color-text-muted);
+    padding: var(--sp-24) 0;
+    font-size: var(--fs-lg);
+}
+
+/* ---------- Group (To Start / Mains / etc.) ---------- */
+.menu__group {
+    margin-bottom: var(--sp-24);
+}
+
+.menu__group:last-child {
+    margin-bottom: 0;
+}
+
+.menu__group-header {
+    text-align: center;
+    margin-bottom: var(--sp-12);
+}
+
+.menu__group-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+    font-weight: 700;
+    color: var(--color-cream);
+    margin-bottom: var(--sp-3);
+    letter-spacing: 0.01em;
+}
+
+/* ---------- Category (Tapas / Steaks / etc.) ---------- */
+.menu__category {
+    margin-bottom: var(--sp-12);
+}
+
+.menu__category:last-child {
+    margin-bottom: 0;
+}
+
+.menu__category-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--color-gold);
+    margin-bottom: var(--sp-6);
+    padding-bottom: var(--sp-3);
+    border-bottom: 1px solid var(--color-gold-faint);
+}
+
+/* ---------- Items ---------- */
+.menu__items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu__item {
+    margin-bottom: var(--sp-6);
+    break-inside: avoid;
+}
+
+.menu__item:last-child {
+    margin-bottom: 0;
+}
+
+.menu__item-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+}
+
+.menu__item-name {
+    font-family: var(--font-body);
+    font-size: var(--fs-base);
+    font-weight: 400;
+    color: var(--color-cream);
+    flex-shrink: 0;
+}
+
+.menu__item-leader {
+    flex: 1 1 auto;
+    border-bottom: 1px dotted var(--color-gold-faint);
+    margin: 0 var(--sp-2);
+    transform: translateY(-4px);
+}
+
+.menu__item-price {
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    font-weight: 400;
+    color: var(--color-gold);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+
+.menu__item-desc {
+    font-size: var(--fs-sm);
+    font-weight: 300;
+    color: var(--color-text-muted);
+    line-height: 1.7;
+    margin: var(--sp-1) 0 0;
+    max-width: 640px;
+}
+
+/* Wider viewports: keep item rows from stretching too far */
+@media (min-width: 1000px) {
+    .menu__category {
+        max-width: 880px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}

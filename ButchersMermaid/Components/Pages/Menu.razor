@@ -1,0 +1,124 @@
+@page "/menu"
+@rendermode InteractiveServer
+@inject IDbContextFactory<AppDbContext> DbFactory
+@using Microsoft.EntityFrameworkCore
+@using ButchersMermaid.Data
+@using ButchersMermaid.Data.Entities
+
+
+<PageTitle>Menu — The Butcher's Mermaid</PageTitle>
+
+<PageHero BackgroundImage="images/business/restaurant-hero.jpg"
+          Eyebrow="Our Menu"
+          Title="From Butcher to Table"
+          Subtitle="Every cut sourced from our in-house butchery, every plate prepared with intent." />
+
+<section class="menu section">
+    <div class="container">
+        @if (_loading)
+        {
+            <p class="menu__loading">Loading menu…</p>
+        }
+        else if (_groups.Count == 0)
+        {
+            <p class="menu__empty">Menu is currently unavailable.</p>
+        }
+        else
+        {
+            @foreach (var group in _groups)
+            {
+                <div class="menu__group">
+                    <header class="menu__group-header">
+                        <h2 class="menu__group-title">@group.Key</h2>
+                        <GoldDivider />
+                    </header>
+
+                    @foreach (var category in group)
+                    {
+                        <div class="menu__category">
+                            <h3 class="menu__category-title">@category.Name</h3>
+
+                            <ul class="menu__items">
+                                @foreach (var item in category.Items)
+                                {
+                                    <li class="menu__item">
+                                        <div class="menu__item-row">
+                                            <span class="menu__item-name">@item.Name</span>
+                                            <span class="menu__item-leader" aria-hidden="true"></span>
+                                            <span class="menu__item-price">@FormatPrice(item)</span>
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                                        {
+                                            <p class="menu__item-desc">@item.Description</p>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+</section>
+
+@code {
+    private bool _loading = true;
+    private List<IGrouping<string, MenuCategory>> _groups = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+
+        // Load categories with items + prices, ordered so the page renders
+        // without needing client-side sorting.
+        var categories = await db.MenuCategories
+            .Include(c => c.Items)
+                .ThenInclude(i => i.Prices)
+            .OrderBy(c => c.SortOrder)
+            .ToListAsync();
+
+        // Sort children in memory — EF Core's Include doesn't guarantee order.
+        foreach (var category in categories)
+        {
+            category.Items = category.Items
+                .OrderBy(i => i.SortOrder)
+                .ToList();
+
+            foreach (var item in category.Items)
+            {
+                item.Prices = item.Prices
+                    .OrderBy(p => p.SortOrder)
+                    .ToList();
+            }
+        }
+
+        _groups = categories
+            .GroupBy(c => c.DisplayGroup)
+            .ToList();
+
+        _loading = false;
+    }
+
+    private static string FormatPrice(MenuItem item)
+    {
+        if (item.Prices.Count > 0)
+        {
+            // Multiple variants, e.g. "200g R230 · 300g R285 · 500g R355"
+            var parts = item.Prices
+                .OrderBy(p => p.SortOrder)
+                .Select(p => string.IsNullOrWhiteSpace(p.PortionLabel)
+                    ? $"R {p.Amount:0}"
+                    : $"{p.PortionLabel} · R {p.Amount:0}");
+            return string.Join("   ", parts);
+        }
+
+        if (item.BasePrice.HasValue)
+        {
+            return $"R {item.BasePrice.Value:0}";
+        }
+
+        // No price — show the note (e.g. "Market price") or a fallback dash
+        return item.PriceNote ?? "—";
+    }
+}
