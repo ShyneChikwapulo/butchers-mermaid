@@ -429,3 +429,10 @@ em {
         height: 260px;
     }
 }
+
+
+/* ---------- Active nav link (global because Blazor NavLink
+     renders outside the NavMenu component's CSS scope) ---------- */
+.site-nav__link.active {
+    color: var(--color-gold);
+}

@@ -74,8 +74,7 @@
     transition: color var(--dur-fast) var(--ease-out);
 }
 
-.site-nav__link:hover,
-.site-nav__link.active {
+.site-nav__link:hover {
     color: var(--color-gold);
 }
 
