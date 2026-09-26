@@ -75,6 +75,7 @@
         var categories = await db.MenuCategories
             .Include(c => c.Items)
                 .ThenInclude(i => i.Prices)
+            .AsSplitQuery()
             .OrderBy(c => c.SortOrder)
             .ToListAsync();
 

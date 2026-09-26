@@ -13,12 +13,17 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
     {
         options.UseSqlServer(
             builder.Configuration.GetConnectionString("DefaultConnection"),
-            sql => sql.EnableRetryOnFailure());
+            sql =>
+            {
+                sql.EnableRetryOnFailure();
+                sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            });
     }
     else
     {
         options.UseSqlite(
-            builder.Configuration.GetConnectionString("DefaultConnection"));
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            sqlite => sqlite.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
     }
 });
 
