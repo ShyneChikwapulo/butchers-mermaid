@@ -1,24 +1,210 @@
 ﻿
 @page "/"
+@rendermode InteractiveServer
 
-<PageTitle>The Butcher's Mermaid — Hout Bay</PageTitle>
+<PageTitle>The Butcher's Mermaid — Butchery, Restaurant & Deli · Hout Bay</PageTitle>
 
-<section class="container section" style="text-align: center;">
-    <p class="eyebrow">Hout Bay · Cape Town</p>
-    <h1 class="hero-h1" style="margin-top: var(--sp-4);">
-        Where the Pasture<br />
-        <em>Meets the Sea</em>
-    </h1>
-    <GoldDivider />
-    <p class="lead" style="max-width: 540px; margin: var(--sp-6) auto var(--sp-12);">
-        Premium butchery, upscale restaurant &amp; deli. Pasture-reared meats,
-        house-made charcuterie, and seasonal seafood — all under one roof.
-    </p>
-    <div style="display: flex; gap: var(--sp-4); justify-content: center; flex-wrap: wrap;">
-        <a href="https://www.dineplan.com/restaurant/the-butchers-mermaid"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="btn btn-primary">Book a Table</a>
-        <a href="/butchery" class="btn btn-outline">Explore</a>
+
+<section class="hero">
+    <div class="hero__bg" style="background-image: url('images/business/hero-interior.jpg');"></div>
+    <div class="hero__overlay"></div>
+
+    <div class="hero__content">
+        <img src="images/brand/logo.svg" alt="The Butcher's Mermaid" class="hero__logo animate-fade-up" />
+
+        <p class="eyebrow animate-fade-up-2">Hout Bay · Cape Town</p>
+
+        <h1 class="hero__title animate-fade-up-2">
+            Where the Pasture<br />
+            <em>Meets the Sea</em>
+        </h1>
+
+        <GoldDivider />
+
+        <p class="hero__lead animate-fade-up-3">
+            Premium butchery, upscale restaurant &amp; deli. Pasture-reared meats,
+            house-made charcuterie, and seasonal seafood — all under one roof in Hout Bay.
+        </p>
+
+        <div class="hero__actions animate-fade-up-3">
+            <a href="@DineplanUrl" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                Book a Table
+            </a>
+            <a href="/butchery" class="btn btn-outline">Explore</a>
+        </div>
+    </div>
+
+    <div class="hero__scroll-hint"></div>
+</section>
+
+
+<section class="pillars section section-card">
+    <div class="container">
+        @foreach (var pillar in Pillars)
+        {
+            <article class="pillar @(pillar.Reverse ? "pillar--reverse" : "")">
+                <div class="pillar__media">
+                    <img src="@pillar.Image" alt="@pillar.Alt" class="pillar__img" loading="lazy" />
+                </div>
+                <div class="pillar__body">
+                    <p class="eyebrow">@pillar.Eyebrow</p>
+                    <h2 class="pillar__title">@pillar.Title</h2>
+                    <GoldDivider />
+                    <p class="pillar__desc">@pillar.Description</p>
+                    <a href="@pillar.Href" class="pillar__link">@pillar.LinkLabel →</a>
+                </div>
+            </article>
+        }
     </div>
 </section>
+
+
+<section class="location-banner">
+    <img src="images/business/hout-bay-banner.jpg" alt="Hout Bay, Cape Town" class="location-banner__bg" loading="lazy" />
+    <div class="location-banner__overlay"></div>
+    <div class="location-banner__content">
+        <p class="eyebrow">Our Home</p>
+        <h2 class="location-banner__title">Hout Bay, Cape Town</h2>
+        <GoldDivider />
+        <p class="location-banner__address">
+            Shop 1, Red Sails Building · 26 Main Road · Hout Bay · 7806
+        </p>
+    </div>
+</section>
+
+
+<section class="find-us section section-card">
+    <div class="container">
+        <div class="find-us__header">
+            <p class="eyebrow">Find Us</p>
+            <h2 class="find-us__title">Come Visit</h2>
+            <GoldDivider />
+        </div>
+
+        <div class="find-us__grid">
+            <div class="find-us__col">
+                <div class="find-us__block">
+                    <h3 class="find-us__block-title">Address</h3>
+                    <p>Shop 1, Red Sails Building</p>
+                    <p>26 Main Road</p>
+                    <p>Hout Bay, Cape Town, 7806</p>
+                </div>
+
+                <div class="find-us__block">
+                    <h3 class="find-us__block-title">Get in Touch</h3>
+                    <p><a href="mailto:@ContactEmail" class="find-us__link">@ContactEmail</a></p>
+                    <p><a href="tel:+27213000282" class="find-us__link">+27 21 300 0282</a></p>
+                </div>
+
+                <div class="find-us__block">
+                    <h3 class="find-us__block-title">Hours</h3>
+                    <dl class="hours">
+                        @foreach (var h in Hours)
+                        {
+                            <div class="hours__row @(h.Closed ? "hours__row--closed" : "")">
+                                <dt class="hours__day">@h.Day</dt>
+                                <dd class="hours__time">@h.Time</dd>
+                            </div>
+                        }
+                    </dl>
+                </div>
+
+                <div class="find-us__block">
+                    <h3 class="find-us__block-title">Follow</h3>
+                    <div class="find-us__socials">
+                        <a href="@FacebookUrl" target="_blank" rel="noopener noreferrer" class="find-us__social">Facebook</a>
+                        <a href="@InstagramUrl" target="_blank" rel="noopener noreferrer" class="find-us__social">Instagram</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="find-us__col">
+                <div class="find-us__map">
+                    <iframe
+                        src="https://www.google.com/maps?q=26+Main+Road,+Hout+Bay,+Cape+Town,+7806&output=embed"
+                        width="100%"
+                        height="100%"
+                        style="border: 0;"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        title="The Butcher's Mermaid location">
+                    </iframe>
+                </div>
+                <p class="find-us__map-caption">Red Sails Building, 26 Main Road, Hout Bay</p>
+
+                <div class="find-us__cta">
+                    <a href="@UberEatsUrl" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">
+                        Order on Uber Eats
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    // Business constants — single source of truth for the home page.
+    private const string DineplanUrl = "https://www.dineplan.com/restaurant/the-butchers-mermaid";
+    private const string UberEatsUrl  = "https://www.ubereats.com/za/store/the-butchers-mermaid/WdjWPxY4RiyUx_Du-jwVdA";
+    private const string FacebookUrl  = "https://www.facebook.com/thebutchersmermaid";
+    private const string InstagramUrl = "https://www.instagram.com/thebutchersmermaid";
+    private const string ContactEmail = "info@thebutchersmermaid.co.za";
+
+
+    private record Pillar(
+        string Eyebrow,
+        string Title,
+        string Description,
+        string Image,
+        string Alt,
+        string Href,
+        string LinkLabel,
+        bool Reverse);
+
+    private static readonly Pillar[] Pillars =
+    {
+        new(
+            Eyebrow:     "The Butchery",
+            Title:       "Meat of the Highest Provenance",
+            Description: "Wagyu, dry-aged beef, free-range lamb and pork, house-made charcuterie. Sourced with integrity, cut with craft.",
+            Image:       "images/business/pillar-butchery.jpg",
+            Alt:         "Premium cuts at The Butcher's Mermaid butchery counter",
+            Href:        "/butchery",
+            LinkLabel:   "Explore the butchery",
+            Reverse:     false),
+
+        new(
+            Eyebrow:     "The Restaurant",
+            Title:       "Dine With Intention",
+            Description: "Steaks on hot stone, kudu fillet, hand-made burgers and charcuterie boards — served indoors or on the open terrace.",
+            Image:       "images/business/pillar-restaurant.jpg",
+            Alt:         "The Butcher's Mermaid restaurant dining room",
+            Href:        "/restaurant",
+            LinkLabel:   "See the restaurant",
+            Reverse:     true),
+
+        new(
+            Eyebrow:     "Deli & Bar",
+            Title:       "Take the Good Stuff Home",
+            Description: "Artisan cheeses, cured meats, organic produce and boutique wines — with an off-consumption licence so you can take a bottle home.",
+            Image:       "images/business/pillar-deli-bar.jpg",
+            Alt:         "The Butcher's Mermaid deli and bar counter",
+            Href:        "/deli",
+            LinkLabel:   "Visit the deli",
+            Reverse:     false),
+    };
+
+
+    private record OpeningHours(string Day, string Time, bool Closed);
+
+    private static readonly OpeningHours[] Hours =
+    {
+        new("Monday",    "Closed",       true),
+        new("Tuesday",   "09:00–21:00",  false),
+        new("Wednesday", "09:00–21:00",  false),
+        new("Thursday",  "09:00–21:00",  false),
+        new("Friday",    "09:00–21:00",  false),
+        new("Saturday",  "09:00–21:00",  false),
+        new("Sunday",    "Closed",       true),
+    };
+}

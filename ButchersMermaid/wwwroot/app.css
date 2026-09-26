@@ -271,3 +271,40 @@ em {
   padding: 1rem 1rem 1rem 3.7rem;
   color: white;
 }
+
+/* ---------- Motion ---------- */
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-up {
+    animation: fade-up 0.9s var(--ease-out) forwards;
+    opacity: 0;
+}
+
+.animate-fade-up-2 {
+    animation: fade-up 0.9s 0.2s var(--ease-out) forwards;
+    opacity: 0;
+}
+
+.animate-fade-up-3 {
+    animation: fade-up 0.9s 0.4s var(--ease-out) forwards;
+    opacity: 0;
+}
+
+/* Respect user's reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .animate-fade-up,
+    .animate-fade-up-2,
+    .animate-fade-up-3 {
+        animation: none;
+        opacity: 1;
+    }
+}
