@@ -1,0 +1,52 @@
+
+@inject SiteConfig Site
+
+<HeadContent>
+    <script type="application/ld+json">@((MarkupString)Json)</script>
+</HeadContent>
+
+@code {
+    private string Json => BuildRestaurantJson();
+
+    private string BuildRestaurantJson()
+    {
+        var opening = new Dictionary<string, object>
+        {
+            ["@type"] = "OpeningHoursSpecification",
+            ["dayOfWeek"] = new[] { "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" },
+            ["opens"] = "09:00",
+            ["closes"] = "21:00",
+        };
+
+        var address = new Dictionary<string, object>
+        {
+            ["@type"] = "PostalAddress",
+            ["streetAddress"] = "Shop 1, Red Sails Building, 26 Main Road",
+            ["addressLocality"] = "Hout Bay",
+            ["addressRegion"] = "Western Cape",
+            ["postalCode"] = "7806",
+            ["addressCountry"] = "ZA",
+        };
+
+        var data = new Dictionary<string, object>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "Restaurant",
+            ["name"] = "The Butcher's Mermaid",
+            ["image"] = Site.Url("images/business/hero-interior.jpg"),
+            ["url"] = Site.Url(""),
+            ["telephone"] = BusinessInfo.PhoneDisplay,
+            ["email"] = BusinessInfo.Email,
+            ["address"] = address,
+            ["servesCuisine"] = new[] { "Steakhouse", "Seafood", "European" },
+            ["priceRange"] = "R200–R700",
+            ["openingHoursSpecification"] = new[] { opening },
+            ["sameAs"] = new[] { BusinessInfo.FacebookUrl, BusinessInfo.InstagramUrl },
+        };
+
+        return System.Text.Json.JsonSerializer.Serialize(data, new System.Text.Json.JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        });
+    }
+}

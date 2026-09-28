@@ -1,0 +1,51 @@
+@inject SiteConfig Site
+@inject NavigationManager Nav
+
+<HeadContent>
+    <meta name="description" content="@Description" />
+
+    @* Canonical *@
+    <link rel="canonical" href="@CanonicalUrl" />
+
+    @* Open Graph (Facebook, LinkedIn, WhatsApp) *@
+    <meta property="og:type" content="@OgType" />
+    <meta property="og:title" content="@Title" />
+    <meta property="og:description" content="@Description" />
+    <meta property="og:url" content="@CanonicalUrl" />
+    <meta property="og:image" content="@AbsoluteImage" />
+    <meta property="og:site_name" content="The Butcher's Mermaid" />
+
+    @* Twitter card (Twitter, X, some other platforms) *@
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@Title" />
+    <meta name="twitter:description" content="@Description" />
+    <meta name="twitter:image" content="@AbsoluteImage" />
+</HeadContent>
+
+@code {
+    /// <summary>Page title. Rendered in the og:title, twitter:title tags.</summary>
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+
+    /// <summary>Short description, 120–160 chars is ideal for search snippets.</summary>
+    [Parameter, EditorRequired] public string Description { get; set; } = string.Empty;
+
+    /// <summary>Relative path to the OG image, e.g. "images/business/hero-interior.jpg".</summary>
+    [Parameter] public string? Image { get; set; }
+
+    /// <summary>Open Graph type. "website" for most pages, "article" for content.</summary>
+    [Parameter] public string OgType { get; set; } = "website";
+
+    /// <summary>
+    /// Optional canonical URL override. Defaults to the current page URL,
+    /// which is almost always what you want.
+    /// </summary>
+    [Parameter] public string? CanonicalPath { get; set; }
+
+    private string CanonicalUrl =>
+        !string.IsNullOrWhiteSpace(CanonicalPath)
+            ? Site.Url(CanonicalPath)
+            : Site.Url(Nav.ToBaseRelativePath(Nav.Uri));
+
+    private string AbsoluteImage =>
+        string.IsNullOrWhiteSpace(Image) ? Site.DefaultOgImage : Site.Url(Image);
+}

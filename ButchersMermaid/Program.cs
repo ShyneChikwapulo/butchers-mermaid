@@ -36,6 +36,15 @@ builder.Services.AddSingleton<IAdminAuthService, AdminAuthService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<IEmailService, EmailService>();
 
+// ---------- Site configuration ----------
+var baseUrl = builder.Configuration["Site:BaseUrl"]
+    ?? "https://butchers-mermaid.onrender.com";
+
+builder.Services.AddSingleton(new SiteConfig
+{
+    BaseUrl = baseUrl.TrimEnd('/'),
+});
+
 // ---------- Blazor ----------
 builder.Services
     .AddRazorComponents()
