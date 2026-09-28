@@ -1,6 +1,7 @@
 using ButchersMermaid.Components;
 using ButchersMermaid.Data;
 using Microsoft.EntityFrameworkCore;
+using ButchersMermaid.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,10 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
             sqlite => sqlite.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
     }
 });
+
+// ---------- Services ----------
+builder.Services.AddScoped<IEnquiryRepository, EnquiryRepository>();
+builder.Services.AddSingleton<IAdminAuthService, AdminAuthService>();
 
 // ---------- Blazor ----------
 builder.Services

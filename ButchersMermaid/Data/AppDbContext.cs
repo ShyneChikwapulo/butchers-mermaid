@@ -10,6 +10,7 @@ public class AppDbContext : DbContext
     public DbSet<MenuCategory> MenuCategories => Set<MenuCategory>();
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<MenuPrice> MenuPrices => Set<MenuPrice>();
+    public DbSet<Enquiry> Enquiries => Set<Enquiry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,5 +51,26 @@ public class AppDbContext : DbContext
 
             entity.HasIndex(p => p.SortOrder);
         });
+
+        modelBuilder.Entity<Enquiry>(entity =>
+        {
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(320);
+            entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.BusinessName).HasMaxLength(200);
+            entity.Property(e => e.BusinessType).HasMaxLength(100);
+            entity.Property(e => e.MonthlyVolume).HasMaxLength(50);
+            entity.Property(e => e.Subject).HasMaxLength(200);
+            entity.Property(e => e.Message).IsRequired().HasMaxLength(5000);
+            entity.Property(e => e.SubmittedFromIp).HasMaxLength(64);
+            entity.Property(e => e.EmailError).HasMaxLength(1000);
+
+            // Type is stored as int (default), but index it because we'll
+            // filter by type on the admin page.
+            entity.HasIndex(e => e.Type);
+            entity.HasIndex(e => e.SubmittedAt);
+            entity.HasIndex(e => e.IsRead);
+        });
+
     }
 }
