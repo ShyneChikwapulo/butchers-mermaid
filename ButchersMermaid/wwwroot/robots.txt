@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin-b7f3e9
+Disallow: /api/
+
+Sitemap: https://butchers-mermaid.onrender.com/sitemap.xml

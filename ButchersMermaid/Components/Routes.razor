@@ -1,13 +1,23 @@
-﻿
-<Router AppAssembly="typeof(Program).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <LayoutView Layout="typeof(Layout.MainLayout)">
-            <PageTitle>Not found</PageTitle>
-            <p role="alert">Sorry, the page you're looking for doesn't exist.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+﻿<NotFound>
+    <LayoutView Layout="typeof(Layout.MainLayout)">
+        <PageTitle>Page Not Found — The Butcher's Mermaid</PageTitle>
+        <SeoMeta Title="Page Not Found — The Butcher's Mermaid"
+                 Description="The page you're looking for doesn't exist. Return to The Butcher's Mermaid homepage." />
+        <section class="not-found">
+            <div class="container container-narrow">
+                <p class="eyebrow">404</p>
+                <h1 class="not-found__title">Page Not Found</h1>
+                <GoldDivider />
+                <p class="not-found__body">
+                    The page you're looking for has been moved, renamed, or never existed.
+                    Let's get you back to somewhere useful.
+                </p>
+                <div class="not-found__actions">
+                    <a href="/" class="btn btn-primary">Return Home</a>
+                    <a href="/menu" class="btn btn-outline">View Menu</a>
+                    <a href="/contact" class="btn btn-ghost">Find Us</a>
+                </div>
+            </div>
+        </section>
+    </LayoutView>
+</NotFound>

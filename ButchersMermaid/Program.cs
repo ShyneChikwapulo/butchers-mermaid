@@ -3,6 +3,7 @@ using ButchersMermaid.Data;
 using Microsoft.EntityFrameworkCore;
 using ButchersMermaid.Services;
 using ButchersMermaid.Endpoints;
+using ButchersMermaid.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,5 +93,6 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.MapAdminEndpoints();
+app.MapSitemapEndpoint();
 
 app.Run();
