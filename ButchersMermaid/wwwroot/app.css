@@ -17,9 +17,9 @@
   --color-parchment:     #EDE5CC;
   --color-text-body:     #C8B897;
   --color-text-muted:    #9A8E7A;
-  --color-text-dim:      #7A6E5C;
-  --color-text-faint:    #5A5040;
-  --color-text-ghost:    #3A3028;
+  --color-text-dim:      #857860;
+  --color-text-faint:    #7A6E5C;
+  --color-text-ghost:    #5A5040;
 
   --color-charcoal:      #111010;
   --color-charcoal-mid:  #1C1B1A;
@@ -813,4 +813,49 @@ em {
     gap: var(--sp-4);
     justify-content: center;
     flex-wrap: wrap;
+}
+
+
+/* ---------- Skip to content ---------- */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: var(--sp-4);
+    z-index: 9999;
+    background: var(--color-gold);
+    color: var(--color-charcoal);
+    padding: var(--sp-3) var(--sp-6);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: top var(--dur-fast) var(--ease-out);
+}
+
+.skip-link:focus {
+    top: var(--sp-4);
+    outline: 2px solid var(--color-cream);
+    outline-offset: 2px;
+}
+
+/* ---------- Focus styles ---------- */
+*:focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+    border-radius: var(--radius);
+}
+
+/* Remove the default outline for mouse users, keep it for keyboard */
+*:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Buttons and links get a subtle background shift on focus too */
+.btn:focus-visible,
+.site-nav__link:focus-visible,
+.site-nav__cta:focus-visible,
+.footer__link:focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
 }
