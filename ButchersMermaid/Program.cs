@@ -2,6 +2,7 @@ using ButchersMermaid.Components;
 using ButchersMermaid.Data;
 using Microsoft.EntityFrameworkCore;
 using ButchersMermaid.Services;
+using ButchersMermaid.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,7 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
 // ---------- Services ----------
 builder.Services.AddScoped<IEnquiryRepository, EnquiryRepository>();
 builder.Services.AddSingleton<IAdminAuthService, AdminAuthService>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<IEmailService, EmailService>();
 
 // ---------- Blazor ----------
@@ -78,5 +80,7 @@ app.MapStaticAssets();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapAdminEndpoints();
 
 app.Run();

@@ -1,0 +1,205 @@
+/* ---------- Dashboard layout ---------- */
+.admin-dashboard {
+    padding: var(--sp-12) 0;
+}
+
+.admin-dashboard__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--sp-6);
+    margin-bottom: var(--sp-12);
+    padding-bottom: var(--sp-6);
+    border-bottom: 1px solid var(--color-gold-border);
+    flex-wrap: wrap;
+}
+
+.admin-dashboard__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    font-weight: 700;
+    color: var(--color-cream);
+    margin: 0 0 var(--sp-2);
+}
+
+.admin-dashboard__subtitle {
+    font-size: var(--fs-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.admin-dashboard__empty,
+.admin-dashboard__empty-state {
+    text-align: center;
+    color: var(--color-text-muted);
+    padding: var(--sp-24) var(--sp-4);
+}
+
+.admin-dashboard__empty-state p {
+    margin: 0 0 var(--sp-2);
+    font-size: var(--fs-lg);
+}
+
+.admin-dashboard__empty-sub {
+    font-size: var(--fs-sm);
+    color: var(--color-text-faint);
+}
+
+/* ---------- Enquiry card ---------- */
+.admin-dashboard__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+}
+
+.enquiry {
+    border: 1px solid var(--color-gold-faint);
+    background: var(--color-charcoal-card);
+    padding: var(--sp-6);
+    transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.enquiry--unread {
+    border-color: var(--color-gold-border);
+    background: rgba(196, 148, 58, 0.03);
+}
+
+.enquiry__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-4);
+    flex-wrap: wrap;
+}
+
+.enquiry__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+}
+
+.enquiry__type {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+}
+
+.enquiry__date {
+    font-size: var(--fs-xs);
+    color: var(--color-text-faint);
+    font-variant-numeric: tabular-nums;
+}
+
+.enquiry__badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-charcoal);
+    background: var(--color-gold);
+    padding: 2px 8px;
+}
+
+.enquiry__actions {
+    display: flex;
+    gap: var(--sp-2);
+}
+
+.enquiry__action {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-body);
+    background: transparent;
+    border: 1px solid var(--color-gold-border);
+    padding: var(--sp-2) var(--sp-4);
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out);
+}
+
+.enquiry__action:hover:not(:disabled) {
+    color: var(--color-gold);
+    border-color: var(--color-gold);
+}
+
+.enquiry__action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.enquiry__action--danger:hover:not(:disabled) {
+    color: #E08888;
+    border-color: #E08888;
+}
+
+/* ---------- Enquiry body ---------- */
+.enquiry__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+}
+
+.enquiry__row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: var(--sp-3);
+    font-size: var(--fs-sm);
+    font-weight: 300;
+    color: var(--color-text-body);
+}
+
+.enquiry__label {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+    padding-top: 3px;
+}
+
+.enquiry__row--message {
+    align-items: start;
+    margin-top: var(--sp-2);
+}
+
+.enquiry__message {
+    margin: 0;
+    white-space: pre-wrap;
+    line-height: 1.7;
+    color: var(--color-cream);
+}
+
+.enquiry__footer {
+    margin-top: var(--sp-3);
+    padding-top: var(--sp-3);
+    border-top: 1px solid var(--color-gold-faint);
+}
+
+.enquiry__status {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+}
+
+.enquiry__status--ok {
+    color: #6FA87F;
+}
+
+.enquiry__status--fail {
+    color: #E08888;
+}
+
+@media (max-width: 900px) {
+    .enquiry__row {
+        grid-template-columns: 1fr;
+        gap: var(--sp-1);
+    }
+}

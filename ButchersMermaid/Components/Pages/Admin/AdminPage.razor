@@ -1,0 +1,24 @@
+@page "/admin-b7f3e9"
+@inject IAdminAuthService Auth
+@inject IHttpContextAccessor HttpContextAccessor
+
+<PageTitle>Admin — The Butcher's Mermaid</PageTitle>
+
+@{
+    var context = HttpContextAccessor.HttpContext;
+    var isAuthenticated = context is not null && Auth.IsAuthenticated(context);
+    var showError = context?.Request.Query.ContainsKey("error") == true;
+}
+
+<div class="admin-page">
+    <div class="container">
+        @if (isAuthenticated)
+        {
+            <AdminDashboard />
+        }
+        else
+        {
+            <AdminLoginForm ShowError="showError" />
+        }
+    </div>
+</div>

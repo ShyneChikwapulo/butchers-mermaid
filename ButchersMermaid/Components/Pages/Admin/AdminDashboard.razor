@@ -1,0 +1,204 @@
+@rendermode InteractiveServer
+@inject IEnquiryRepository Enquiries
+@inject NavigationManager Nav
+@inject ILogger<AdminDashboard> Logger
+
+<div class="admin-dashboard">
+    <header class="admin-dashboard__header">
+        <div>
+            <h1 class="admin-dashboard__title">Enquiries</h1>
+            <p class="admin-dashboard__subtitle">
+                @_totalCount total · @_unreadCount unread
+            </p>
+        </div>
+        <form method="post" action="/api/admin/logout" style="margin:0;">
+            <button type="submit" class="btn btn-ghost">Sign Out</button>
+        </form>
+    </header>
+
+    @if (_loading)
+    {
+        <p class="admin-dashboard__empty">Loading…</p>
+    }
+    else if (_enquiries.Count == 0)
+    {
+        <div class="admin-dashboard__empty-state">
+            <p>No enquiries yet.</p>
+            <p class="admin-dashboard__empty-sub">
+                Submissions from the contact and wholesale forms will appear here.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="admin-dashboard__list">
+            @foreach (var enquiry in _enquiries)
+            {
+                <article class="enquiry @(enquiry.IsRead ? "enquiry--read" : "enquiry--unread")">
+                    <header class="enquiry__header">
+                        <div class="enquiry__meta">
+                            <span class="enquiry__type">@TypeLabel(enquiry.Type)</span>
+                            <span class="enquiry__date">@FormatDate(enquiry.SubmittedAt)</span>
+                            @if (!enquiry.IsRead)
+                            {
+                                <span class="enquiry__badge">New</span>
+                            }
+                        </div>
+                        <div class="enquiry__actions">
+                            <button class="enquiry__action"
+                                    @onclick="() => ToggleRead(enquiry)"
+                                    disabled="@_busy">
+                                @(enquiry.IsRead ? "Mark unread" : "Mark read")
+                            </button>
+                            <button class="enquiry__action enquiry__action--danger"
+                                    @onclick="() => Delete(enquiry)"
+                                    disabled="@_busy">
+                                Delete
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="enquiry__body">
+                        <div class="enquiry__row">
+                            <span class="enquiry__label">From</span>
+                            <span>@enquiry.Name &lt;@enquiry.Email&gt;</span>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(enquiry.Phone))
+                        {
+                            <div class="enquiry__row">
+                                <span class="enquiry__label">Phone</span>
+                                <span>@enquiry.Phone</span>
+                            </div>
+                        }
+                        @if (enquiry.Type == EnquiryType.Wholesale)
+                        {
+                            @if (!string.IsNullOrWhiteSpace(enquiry.BusinessName))
+                            {
+                                <div class="enquiry__row">
+                                    <span class="enquiry__label">Business</span>
+                                    <span>@enquiry.BusinessName</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(enquiry.BusinessType))
+                            {
+                                <div class="enquiry__row">
+                                    <span class="enquiry__label">Type</span>
+                                    <span>@enquiry.BusinessType</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(enquiry.MonthlyVolume))
+                            {
+                                <div class="enquiry__row">
+                                    <span class="enquiry__label">Volume</span>
+                                    <span>@enquiry.MonthlyVolume</span>
+                                </div>
+                            }
+                        }
+                        else if (!string.IsNullOrWhiteSpace(enquiry.Subject))
+                        {
+                            <div class="enquiry__row">
+                                <span class="enquiry__label">Subject</span>
+                                <span>@enquiry.Subject</span>
+                            </div>
+                        }
+                        <div class="enquiry__row enquiry__row--message">
+                            <span class="enquiry__label">Message</span>
+                            <p class="enquiry__message">@enquiry.Message</p>
+                        </div>
+                        <div class="enquiry__footer">
+                            <span class="enquiry__email-status">
+                                @if (enquiry.EmailSent == true)
+                                {
+                                    <span class="enquiry__status enquiry__status--ok">Email sent</span>
+                                }
+                                else if (enquiry.EmailSent == false)
+                                {
+                                    <span class="enquiry__status enquiry__status--fail"
+                                          title="@enquiry.EmailError">Email failed</span>
+                                }
+                                else
+                                {
+                                    <span class="enquiry__status">Email not attempted</span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Enquiry> _enquiries = new();
+    private bool _loading = true;
+    private bool _busy;
+    private int _totalCount;
+    private int _unreadCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _enquiries = await Enquiries.GetAllAsync();
+        _totalCount = _enquiries.Count;
+        _unreadCount = _enquiries.Count(e => !e.IsRead);
+        _loading = false;
+    }
+
+    private async Task ToggleRead(Enquiry enquiry)
+    {
+        _busy = true;
+        try
+        {
+            var updated = await Enquiries.MarkReadAsync(enquiry.Id, !enquiry.IsRead);
+            if (updated is not null)
+            {
+                enquiry.IsRead = updated.IsRead;
+                _unreadCount = _enquiries.Count(e => !e.IsRead);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to toggle read state for enquiry {Id}", enquiry.Id);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task Delete(Enquiry enquiry)
+    {
+        // No confirm dialog in this demo — a real admin would want one.
+        _busy = true;
+        try
+        {
+            var deleted = await Enquiries.DeleteAsync(enquiry.Id);
+            if (deleted)
+            {
+                _enquiries.Remove(enquiry);
+                _totalCount = _enquiries.Count;
+                _unreadCount = _enquiries.Count(e => !e.IsRead);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to delete enquiry {Id}", enquiry.Id);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static string TypeLabel(EnquiryType type) =>
+        type == EnquiryType.Wholesale ? "Wholesale" : "Contact";
+
+    private static string FormatDate(DateTime utc) =>
+        utc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+}
