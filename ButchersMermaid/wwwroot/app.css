@@ -833,12 +833,11 @@ em {
     transition: top var(--dur-fast) var(--ease-out);
 }
 
-.skip-link:focus {
+.skip-link:focus-visible {
     top: var(--sp-4);
     outline: 2px solid var(--color-cream);
     outline-offset: 2px;
 }
-
 /* ---------- Focus styles ---------- */
 *:focus-visible {
     outline: 2px solid var(--color-gold);
