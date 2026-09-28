@@ -51,9 +51,9 @@
                                 @(enquiry.IsRead ? "Mark unread" : "Mark read")
                             </button>
                             <button class="enquiry__action enquiry__action--danger"
-                                    @onclick="() => Delete(enquiry)"
+                                    @onclick="() => RequestDelete(enquiry)"
                                     disabled="@_busy">
-                                Delete
+                                @(_confirmDeleteId == enquiry.Id ? "Confirm?" : "Delete")
                             </button>
                         </div>
                     </header>
@@ -105,23 +105,15 @@
                             <span class="enquiry__label">Message</span>
                             <p class="enquiry__message">@enquiry.Message</p>
                         </div>
-                        <div class="enquiry__footer">
-                            <span class="enquiry__email-status">
-                                @if (enquiry.EmailSent == true)
-                                {
-                                    <span class="enquiry__status enquiry__status--ok">Email sent</span>
-                                }
-                                else if (enquiry.EmailSent == false)
-                                {
-                                    <span class="enquiry__status enquiry__status--fail"
-                                          title="@enquiry.EmailError">Email failed</span>
-                                }
-                                else
-                                {
-                                    <span class="enquiry__status">Email not attempted</span>
-                                }
-                            </span>
-                        </div>
+                        @if (enquiry.EmailSent == false)
+                        {
+                            <div class="enquiry__footer">
+                                <span class="enquiry__status enquiry__status--fail"
+                                      title="@enquiry.EmailError">
+                                    ⚠ Email delivery failed
+                                </span>
+                            </div>
+                        }
                     </div>
                 </article>
             }
@@ -135,6 +127,7 @@
     private bool _busy;
     private int _totalCount;
     private int _unreadCount;
+    private int? _confirmDeleteId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -172,9 +165,23 @@
         }
     }
 
+    private void RequestDelete(Enquiry enquiry)
+    {
+        if (_confirmDeleteId == enquiry.Id)
+        {
+            // Second click — proceed
+            _ = Delete(enquiry);
+            _confirmDeleteId = null;
+        }
+        else
+        {
+            // First click — arm the confirmation
+            _confirmDeleteId = enquiry.Id;
+        }
+    }
+
     private async Task Delete(Enquiry enquiry)
     {
-        // No confirm dialog in this demo — a real admin would want one.
         _busy = true;
         try
         {
@@ -185,6 +192,7 @@
                 _totalCount = _enquiries.Count;
                 _unreadCount = _enquiries.Count(e => !e.IsRead);
             }
+            _confirmDeleteId = null;
         }
         catch (Exception ex)
         {
@@ -200,5 +208,5 @@
         type == EnquiryType.Wholesale ? "Wholesale" : "Contact";
 
     private static string FormatDate(DateTime utc) =>
-        utc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+        BusinessInfo.FormatSast(utc);
 }
