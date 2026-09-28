@@ -3,7 +3,7 @@ using ButchersMermaid.Data;
 using Microsoft.EntityFrameworkCore;
 using ButchersMermaid.Services;
 using ButchersMermaid.Endpoints;
-using ButchersMermaid.Endpoints;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
