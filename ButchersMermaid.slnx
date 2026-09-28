@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="ButchersMermaid.Tests/ButchersMermaid.Tests.csproj" />
   <Project Path="ButchersMermaid/ButchersMermaid.csproj" />
 </Solution>

@@ -1,8 +1,6 @@
 @page "/menu"
 @rendermode InteractiveServer
-@inject IDbContextFactory<AppDbContext> DbFactory
-@using Microsoft.EntityFrameworkCore
-@using ButchersMermaid.Data
+@inject IMenuRepository MenuRepo
 @using ButchersMermaid.Data.Entities
 
 
@@ -68,36 +66,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await using var db = await DbFactory.CreateDbContextAsync();
-
-        // Load categories with items + prices, ordered so the page renders
-        // without needing client-side sorting.
-        var categories = await db.MenuCategories
-            .Include(c => c.Items)
-                .ThenInclude(i => i.Prices)
-            .AsSplitQuery()
-            .OrderBy(c => c.SortOrder)
-            .ToListAsync();
-
-        // Sort children in memory — EF Core's Include doesn't guarantee order.
-        foreach (var category in categories)
-        {
-            category.Items = category.Items
-                .OrderBy(i => i.SortOrder)
-                .ToList();
-
-            foreach (var item in category.Items)
-            {
-                item.Prices = item.Prices
-                    .OrderBy(p => p.SortOrder)
-                    .ToList();
-            }
-        }
-
-        _groups = categories
-            .GroupBy(c => c.DisplayGroup)
-            .ToList();
-
+        _loading = true;
+        _groups = await MenuRepo.GetGroupedMenuAsync();
         _loading = false;
     }
 

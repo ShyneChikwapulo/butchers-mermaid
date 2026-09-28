@@ -31,6 +31,7 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
 
 // ---------- Services ----------
 builder.Services.AddScoped<IEnquiryRepository, EnquiryRepository>();
+builder.Services.AddScoped<IMenuRepository, MenuRepository>();
 builder.Services.AddSingleton<IAdminAuthService, AdminAuthService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<IEmailService, EmailService>();
