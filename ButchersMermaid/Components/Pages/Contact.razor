@@ -1,0 +1,220 @@
+@page "/contact"
+@rendermode InteractiveServer
+@inject IEnquiryRepository Enquiries
+@inject IEmailService Email
+@inject ILogger<Contact> Logger
+
+<PageTitle>Contact — The Butcher's Mermaid</PageTitle>
+
+<PageHero BackgroundImage="images/business/hout-bay-banner.jpg"
+          Eyebrow="Find Us"
+          Title="Come Visit"
+          Subtitle="Shop 1, Red Sails Building · 26 Main Road · Hout Bay" />
+
+<section class="section">
+    <div class="container">
+        <div class="contact-grid">
+            <div class="contact-info">
+                <div class="contact-block">
+                    <h3 class="contact-block__title">Address</h3>
+                    <p>Shop 1, Red Sails Building</p>
+                    <p>26 Main Road</p>
+                    <p>Hout Bay, Cape Town, 7806</p>
+                </div>
+
+                <div class="contact-block">
+                    <h3 class="contact-block__title">Get in Touch</h3>
+                    <p><a href="mailto:info@thebutchersmermaid.co.za" class="contact-link">info@thebutchersmermaid.co.za</a></p>
+                    <p><a href="tel:+27213000282" class="contact-link">+27 21 300 0282</a></p>
+                </div>
+
+                <div class="contact-block">
+                    <h3 class="contact-block__title">Opening Hours</h3>
+                    <dl class="hours">
+                        @foreach (var h in Hours)
+                        {
+                            <div class="hours__row @(h.Closed ? "hours__row--closed" : "")">
+                                <dt class="hours__day">@h.Day</dt>
+                                <dd class="hours__time">@h.Time</dd>
+                            </div>
+                        }
+                    </dl>
+                </div>
+
+                <div class="contact-block">
+                    <h3 class="contact-block__title">Follow Us</h3>
+                    <div class="contact-socials">
+                        <a href="https://www.facebook.com/thebutchersmermaid" target="_blank" rel="noopener noreferrer" class="contact-social">Facebook</a>
+                        <a href="https://www.instagram.com/thebutchersmermaid" target="_blank" rel="noopener noreferrer" class="contact-social">Instagram</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-map">
+                <iframe
+                    src="https://www.google.com/maps?q=26+Main+Road,+Hout+Bay,+Cape+Town,+7806&output=embed"
+                    width="100%"
+                    height="100%"
+                    style="border: 0;"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    title="The Butcher's Mermaid location">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section section-card">
+    <div class="container container-narrow">
+        <div class="section-header">
+            <p class="eyebrow">Send a Message</p>
+            <h2 class="section-header__title">Get in Touch</h2>
+            <GoldDivider />
+            <p class="section-header__subtitle">
+                For bookings, private events, general enquiries, or just to say hello.
+            </p>
+        </div>
+
+        @if (_submitted)
+        {
+            <div class="form-success" role="status">
+                <h3>Thank you.</h3>
+                <p>Your message has been received. We'll be in touch shortly.</p>
+                <button class="btn btn-outline" @onclick="ResetForm">Send another message</button>
+            </div>
+        }
+        else
+        {
+            <EditForm Model="_model" OnValidSubmit="HandleSubmit" FormName="contact">
+                <DataAnnotationsValidator />
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="form-error" role="alert">@_errorMessage</div>
+                }
+
+                <div class="form-row form-row--two">
+                    <div class="form-field">
+                        <label for="ct-name">Your name *</label>
+                        <InputText id="ct-name" @bind-Value="_model.Name" />
+                        <ValidationMessage For="() => _model.Name" />
+                    </div>
+                    <div class="form-field">
+                        <label for="ct-email">Email *</label>
+                        <InputText id="ct-email" type="email" @bind-Value="_model.Email" />
+                        <ValidationMessage For="() => _model.Email" />
+                    </div>
+                </div>
+
+                <div class="form-row form-row--two">
+                    <div class="form-field">
+                        <label for="ct-phone">Phone</label>
+                        <InputText id="ct-phone" type="tel" @bind-Value="_model.Phone" />
+                        <ValidationMessage For="() => _model.Phone" />
+                    </div>
+                    <div class="form-field">
+                        <label for="ct-subject">Subject</label>
+                        <InputSelect id="ct-subject" @bind-Value="_model.Subject">
+                            <option value="">Select…</option>
+                            <option value="Booking enquiry">Booking enquiry</option>
+                            <option value="Private event">Private event</option>
+                            <option value="Wholesale">Wholesale</option>
+                            <option value="General">General</option>
+                            <option value="Other">Other</option>
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="ct-message">Message *</label>
+                    <InputTextArea id="ct-message" @bind-Value="_model.Message" rows="5" />
+                    <ValidationMessage For="() => _model.Message" />
+                </div>
+
+                <div class="form-honeypot" aria-hidden="true">
+                    <label for="ct-website">Website</label>
+                    <InputText id="ct-website" @bind-Value="_model.Website" tabindex="-1" autocomplete="off" />
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" disabled="@_submitting">
+                        @(_submitting ? "Sending…" : "Send Message")
+                    </button>
+                </div>
+            </EditForm>
+        }
+    </div>
+</section>
+
+@code {
+    private EnquiryFormModel _model = new();
+    private bool _submitting;
+    private bool _submitted;
+    private string? _errorMessage;
+
+    private record OpeningHours(string Day, string Time, bool Closed);
+
+    private static readonly OpeningHours[] Hours =
+    {
+        new("Monday",    "Closed",       true),
+        new("Tuesday",   "09:00–21:00",  false),
+        new("Wednesday", "09:00–21:00",  false),
+        new("Thursday",  "09:00–21:00",  false),
+        new("Friday",    "09:00–21:00",  false),
+        new("Saturday",  "09:00–21:00",  false),
+        new("Sunday",    "Closed",       true),
+    };
+
+    private async Task HandleSubmit()
+    {
+        _errorMessage = null;
+
+        if (!string.IsNullOrEmpty(_model.Website))
+        {
+            Logger.LogInformation("Honeypot triggered on contact form.");
+            _submitted = true;
+            return;
+        }
+
+        _submitting = true;
+        try
+        {
+            var enquiry = new Enquiry
+            {
+                Type = EnquiryType.Contact,
+                Name = _model.Name.Trim(),
+                Email = _model.Email.Trim(),
+                Phone = Clean(_model.Phone),
+                Subject = Clean(_model.Subject),
+                Message = _model.Message.Trim(),
+            };
+
+            var saved = await Enquiries.AddAsync(enquiry);
+
+            var (success, error) = await Email.SendEnquiryNotificationAsync(saved);
+            await Enquiries.UpdateEmailStatusAsync(saved.Id, success, error);
+
+            _submitted = true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to submit contact enquiry.");
+            _errorMessage = "Something went wrong. Please try again, or email us directly at info@thebutchersmermaid.co.za.";
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        _model = new();
+        _submitted = false;
+        _errorMessage = null;
+    }
+
+    private static string? Clean(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}

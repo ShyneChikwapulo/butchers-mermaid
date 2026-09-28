@@ -1,0 +1,219 @@
+@page "/wholesale"
+@rendermode InteractiveServer
+@inject IEnquiryRepository Enquiries
+@inject IEmailService Email
+@inject ILogger<Wholesale> Logger
+
+<PageTitle>Wholesale — The Butcher's Mermaid</PageTitle>
+
+<PageHero BackgroundImage="images/business/butchery-hero.jpg"
+          Eyebrow="Wholesale"
+          Title="Supplying Hout Bay's Kitchens"
+          Subtitle="Premium, pasture-reared meat — sourced and cut for the trade." />
+
+<section class="section">
+    <div class="container">
+        <div class="split-section">
+            <div class="split-section__media">
+                <img src="images/business/butchery-counter.jpg" alt="Butchery counter at The Butcher's Mermaid" loading="lazy" />
+            </div>
+            <div class="split-section__body">
+                <p class="eyebrow">For Restaurants, Cafés &amp; Delis</p>
+                <h2>Consistent Quality, Consistent Supply</h2>
+                <GoldDivider />
+                <p>
+                    We supply premium meat to select restaurants in and around Hout Bay.
+                    Not because we sell the cheapest — because we sell the best, and we
+                    do it reliably.
+                </p>
+                <p>
+                    Every cut is sourced from the same pasture-reared, free-range
+                    producers our retail counter relies on. Same provenance, same
+                    standards, same butcher's eye. What you put on your menu is what we
+                    would put on ours.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section section-card">
+    <div class="container container-narrow">
+        <div class="section-header">
+            <p class="eyebrow">What We Supply</p>
+            <h2 class="section-header__title">The Range</h2>
+            <GoldDivider />
+        </div>
+
+        <ul class="wholesale-list">
+            <li><strong>Beef</strong> — Wagyu, dry-aged, prime cuts, mince, brisket, short rib</li>
+            <li><strong>Lamb</strong> — free-range, grass-fed, whole carcass or portioned cuts</li>
+            <li><strong>Pork</strong> — pasture-reared, free-range, including house-cured bacon</li>
+            <li><strong>Charcuterie</strong> — coppa, bresaola, house biltong, seasonal specialties</li>
+            <li><strong>Seafood</strong> — seasonal, sustainable, ordered in advance</li>
+        </ul>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container container-narrow">
+        <div class="section-header">
+            <p class="eyebrow">Get in Touch</p>
+            <h2 class="section-header__title">Wholesale Enquiries</h2>
+            <GoldDivider />
+            <p class="section-header__subtitle">
+                Tell us about your kitchen and what you're looking for. We'll be in touch within one business day.
+            </p>
+        </div>
+
+        @if (_submitted)
+        {
+            <div class="form-success" role="status">
+                <h3>Thank you.</h3>
+                <p>Your enquiry has been received. We'll be in touch shortly.</p>
+                <button class="btn btn-outline" @onclick="ResetForm">Send another enquiry</button>
+            </div>
+        }
+        else
+        {
+            <EditForm Model="_model" OnValidSubmit="HandleSubmit" FormName="wholesale">
+                <DataAnnotationsValidator />
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="form-error" role="alert">@_errorMessage</div>
+                }
+
+                <div class="form-row form-row--two">
+                    <div class="form-field">
+                        <label for="ws-business">Business name *</label>
+                        <InputText id="ws-business" @bind-Value="_model.BusinessName" />
+                        <ValidationMessage For="() => _model.BusinessName" />
+                    </div>
+                    <div class="form-field">
+                        <label for="ws-name">Contact name *</label>
+                        <InputText id="ws-name" @bind-Value="_model.Name" />
+                        <ValidationMessage For="() => _model.Name" />
+                    </div>
+                </div>
+
+                <div class="form-row form-row--two">
+                    <div class="form-field">
+                        <label for="ws-email">Email *</label>
+                        <InputText id="ws-email" type="email" @bind-Value="_model.Email" />
+                        <ValidationMessage For="() => _model.Email" />
+                    </div>
+                    <div class="form-field">
+                        <label for="ws-phone">Phone</label>
+                        <InputText id="ws-phone" type="tel" @bind-Value="_model.Phone" />
+                        <ValidationMessage For="() => _model.Phone" />
+                    </div>
+                </div>
+
+                <div class="form-row form-row--two">
+                    <div class="form-field">
+                        <label for="ws-type">Type of business</label>
+                        <InputSelect id="ws-type" @bind-Value="_model.BusinessType">
+                            <option value="">Select…</option>
+                            <option value="Restaurant">Restaurant</option>
+                            <option value="Café">Café</option>
+                            <option value="Deli">Deli</option>
+                            <option value="Hotel">Hotel</option>
+                            <option value="Other">Other</option>
+                        </InputSelect>
+                    </div>
+                    <div class="form-field">
+                        <label for="ws-volume">Approximate monthly volume</label>
+                        <InputSelect id="ws-volume" @bind-Value="_model.MonthlyVolume">
+                            <option value="">Select…</option>
+                            <option value="10–50 kg">10–50 kg</option>
+                            <option value="50–200 kg">50–200 kg</option>
+                            <option value="200 kg+">200 kg+</option>
+                            <option value="Not sure yet">Not sure yet</option>
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="ws-message">Message *</label>
+                    <InputTextArea id="ws-message" @bind-Value="_model.Message" rows="5" />
+                    <ValidationMessage For="() => _model.Message" />
+                </div>
+
+                @* Honeypot — hidden from humans via CSS, invisible to screen readers *@
+                <div class="form-honeypot" aria-hidden="true">
+                    <label for="ws-website">Website</label>
+                    <InputText id="ws-website" @bind-Value="_model.Website" tabindex="-1" autocomplete="off" />
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" disabled="@_submitting">
+                        @(_submitting ? "Sending…" : "Send Enquiry")
+                    </button>
+                </div>
+            </EditForm>
+        }
+    </div>
+</section>
+
+@code {
+    private EnquiryFormModel _model = new();
+    private bool _submitting;
+    private bool _submitted;
+    private string? _errorMessage;
+
+    private async Task HandleSubmit()
+    {
+        _errorMessage = null;
+
+        // Honeypot check — if filled, silently accept and discard.
+        if (!string.IsNullOrEmpty(_model.Website))
+        {
+            Logger.LogInformation("Honeypot triggered on wholesale form.");
+            _submitted = true;
+            return;
+        }
+
+        _submitting = true;
+        try
+        {
+            var enquiry = new Enquiry
+            {
+                Type = EnquiryType.Wholesale,
+                Name = _model.Name.Trim(),
+                Email = _model.Email.Trim(),
+                Phone = Clean(_model.Phone),
+                BusinessName = Clean(_model.BusinessName),
+                BusinessType = Clean(_model.BusinessType),
+                MonthlyVolume = Clean(_model.MonthlyVolume),
+                Message = _model.Message.Trim(),
+            };
+
+            var saved = await Enquiries.AddAsync(enquiry);
+
+            var (success, error) = await Email.SendEnquiryNotificationAsync(saved);
+            await Enquiries.UpdateEmailStatusAsync(saved.Id, success, error);
+
+            _submitted = true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to submit wholesale enquiry.");
+            _errorMessage = "Something went wrong. Please try again, or email us directly at info@thebutchersmermaid.co.za.";
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        _model = new();
+        _submitted = false;
+        _errorMessage = null;
+    }
+
+    private static string? Clean(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
