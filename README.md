@@ -20,8 +20,7 @@ Built as a portfolio demonstration by **Shine Chikwapulo**. Not yet deployed on 
 
 ## Live Demo
 
-Deployed at: **[https://butchers-mermaid.onrender.com](https://butchers-mermaid.onrender.com)**  
-*(Pending Phase 6B)*
+Deployed at: **https://butchers-mermaid.onrender.com**
 
 Production uses ephemeral SQLite. Enquiries and admin session data reset on each deploy.
 
