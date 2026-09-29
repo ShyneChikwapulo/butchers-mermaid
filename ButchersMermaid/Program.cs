@@ -3,6 +3,7 @@ using ButchersMermaid.Data;
 using Microsoft.EntityFrameworkCore;
 using ButchersMermaid.Services;
 using ButchersMermaid.Endpoints;
+using Microsoft.AspNetCore.HttpOverrides;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +33,15 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
 
 // ---------- Services ----------
 builder.Services.AddScoped<IEnquiryRepository, EnquiryRepository>();
+// ---------- Antiforgery ----------
+// In production behind a proxy, the origin seen by the app may differ from
+// what the browser sent. Relax the cookie so Blazor EditForm works.
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.Name = "bm_af";
+});
 builder.Services.AddScoped<IMenuRepository, MenuRepository>();
 builder.Services.AddSingleton<IAdminAuthService, AdminAuthService>();
 builder.Services.AddHttpContextAccessor();
@@ -52,6 +62,19 @@ builder.Services
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
+
+// ---------- Forwarded headers ----------
+// Behind Render (and any reverse proxy), trust the X-Forwarded-* headers
+// so ASP.NET Core knows the original scheme and host.
+var forwardedOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                     | ForwardedHeaders.XForwardedHost
+                     | ForwardedHeaders.XForwardedProto,
+};
+forwardedOptions.KnownIPNetworks.Clear();
+forwardedOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedOptions);
 
 // ---------- Database creation ----------
 // Dev: apply migrations. Prod: EnsureCreated (no migrations in prod for this demo).
@@ -84,10 +107,17 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Only redirect to HTTPS in environments where HTTPS is actually terminating.
+// In Docker/Render, TLS terminates upstream and requests arrive as plain HTTP.
+if (!app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.UseStaticFiles();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
