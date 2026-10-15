@@ -6,10 +6,14 @@
  *
  * Modes (root.dataset.mode): boot -> loading -> cinematic, or static (reduced motion / no WebGL / load failure).
  * three.js r128 and GSAP are vendored in /lib and loaded on demand, so other pages never pay for them.
+ * The full opening plays once per browser session; later visits get a short entrance. ?intro forces the opening.
  * Add ?tbmdebug to the URL to log the lifecycle to the console.
  */
 
 const MODELS = '/models/';
+const SEEN_KEY = 'tbm-intro-seen';
+const seenIntro = () => { try { return sessionStorage.getItem(SEEN_KEY) === '1'; } catch (e) { return false; } };
+const markSeen = () => { try { sessionStorage.setItem(SEEN_KEY, '1'); } catch (e) { } };
 
 /* ---------- on-demand libraries (shared between instances) ---------- */
 const addScript = src => new Promise((ok, no) => {
@@ -377,11 +381,23 @@ function create(root, id, forget) {
       .to(rig.position, { x: M.hx, y: M.hy, duration: 1.8, ease: 'power3.inOut' }, 8.2)
       .to(el.brand, { autoAlpha: 1, y: 0, duration: 1.8, ease: 'power2.out' }, 8.8);
   }
+  /* returning visitors: the finished composition with a short light-up instead of the full opening */
+  function returnEntrance() {
+    steak.visible = true; steak.position.copy(FP); steak.rotation.set(0, .43, 0);
+    cleaver.visible = true; cleaver.position.set(CX, CY, -.75); cleaver.rotation.z = CZ;
+    if (blockC) { blockI.visible = false; blockC.visible = true; }
+    key.intensity = 0;
+    unlock(); build();
+    gsap.set(el.brand, { autoAlpha: 0, y: 24 });
+    track(gsap.to(key, { intensity: 5.9, duration: 1.6, ease: 'power2.out' }));
+    track(gsap.to(el.brand, { autoAlpha: 1, y: 0, duration: 1.4, ease: 'power2.out', delay: .5 }));
+    D = 1;
+  }
   function unlock() {
     done = true; lock(false); navOn(); el.skip.hidden = true;
     track(gsap.to(el.hint, { opacity: 1, duration: 1 }));
   }
-  function finish() { if (done) return; dbg('intro finished'); unlock(); build(); }
+  function finish() { if (done) return; dbg('intro finished'); markSeen(); unlock(); build(); }
 
   /* ---------- scroll-controlled story: the block travels between the three panels, then leaves ---------- */
   function build() {
@@ -410,9 +426,13 @@ function create(root, id, forget) {
       gsap.set(t.children, { opacity: 0, y: 34 });
       track(gsap.to(t.children, { opacity: 1, y: 0, stagger: .12, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: t.parentElement, start: 'top 55%', end: 'bottom 45%', toggleActions: 'play reverse play reverse' } }));
     });
-    T = gsap.timeline({ paused: true, onUpdate: () => D = 1, onComplete: finish });
-    initIntro();
-    el.skip.hidden = false; el.skip.onclick = () => T.timeScale(25);
+    // the full opening plays once per browser session; ?intro, ?seek and ?scroll force it
+    const returning = seenIntro() && !QS.has('intro') && !QS.has('seek') && !QS.has('scroll');
+    if (!returning) {
+      T = gsap.timeline({ paused: true, onUpdate: () => D = 1, onComplete: finish });
+      initIntro();
+      el.skip.hidden = false; el.skip.onclick = () => T.timeScale(25);
+    }
     tick(frame);
     io = new IntersectionObserver(es => { inView = es[0].isIntersecting; D = 1; dbg('story in view:', inView); }, { threshold: 0 }); io.observe(el.story);
     if (matchMedia('(pointer:fine)').matches) on(window, 'pointermove', e => { tx = e.clientX / innerWidth - .5; ty = e.clientY / innerHeight - .5; D = 1; });
@@ -427,6 +447,7 @@ function create(root, id, forget) {
       }, 200);
     });
     D = 1;
+    if (returning) { dbg('returning visitor: short entrance'); returnEntrance(); return; }
     if (QS.has('seek')) { T.pause(); T.time(parseFloat(QS.get('seek')), false); D = 1; setTimeout(() => window.__tbmReady = 1, 500); return; }
     if (QS.has('scroll')) {
       T.pause(); T.time(T.duration(), false); D = 1;
