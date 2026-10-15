@@ -9,58 +9,7 @@
 <StructuredData />
 
 
-<section class="hero">
-    <div class="hero__bg" style="background-image: url('images/business/hero-interior.jpg');"></div>
-    <div class="hero__overlay"></div>
-
-    <div class="hero__content">
-        <img src="images/brand/logo.svg" alt="The Butcher's Mermaid" class="hero__logo animate-fade-up" />
-
-        <p class="eyebrow animate-fade-up-2">Hout Bay · Cape Town</p>
-
-        <h1 class="hero__title animate-fade-up-2">
-            Where the Pasture<br />
-            <em>Meets the Sea</em>
-        </h1>
-
-        <GoldDivider />
-
-        <p class="hero__lead animate-fade-up-3">
-            Premium butchery, upscale restaurant &amp; deli. Pasture-reared meats,
-            house-made charcuterie, and seasonal seafood — all under one roof in Hout Bay.
-        </p>
-
-        <div class="hero__actions animate-fade-up-3">
-            <a href="@BusinessInfo.DineplanUrl" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-                Book a Table
-            </a>
-            <a href="/butchery" class="btn btn-outline">Explore</a>
-        </div>
-    </div>
-
-    <div class="hero__scroll-hint"></div>
-</section>
-
-
-<section class="pillars section section-card">
-    <div class="container">
-        @foreach (var pillar in Pillars)
-        {
-            <article class="pillar @(pillar.Reverse ? "pillar--reverse" : "")">
-                <div class="pillar__media">
-                    <img src="@pillar.Image" alt="@pillar.Alt" class="pillar__img" loading="lazy" />
-                </div>
-                <div class="pillar__body">
-                    <p class="eyebrow">@pillar.Eyebrow</p>
-                    <h2 class="pillar__title">@pillar.Title</h2>
-                    <GoldDivider />
-                    <p class="pillar__desc">@pillar.Description</p>
-                    <a href="@pillar.Href" class="pillar__link">@pillar.LinkLabel →</a>
-                </div>
-            </article>
-        }
-    </div>
-</section>
+<CinematicLanding />
 
 
 <section class="location-banner">
@@ -145,50 +94,3 @@
         </div>
     </div>
 </section>
-
-
-
-@code {
-    private record Pillar(
-        string Eyebrow,
-        string Title,
-        string Description,
-        string Image,
-        string Alt,
-        string Href,
-        string LinkLabel,
-        bool Reverse);
-
-    private static readonly Pillar[] Pillars =
-    {
-        new(
-            Eyebrow:     "The Butchery",
-            Title:       "Meat of the Highest Provenance",
-            Description: "Wagyu, dry-aged beef, free-range lamb and pork, house-made charcuterie. Sourced with integrity, cut with craft.",
-            Image:       "images/business/pillar-butchery.jpg",
-            Alt:         "Premium cuts at The Butcher's Mermaid butchery counter",
-            Href:        "/butchery",
-            LinkLabel:   "Explore the butchery",
-            Reverse:     false),
-
-        new(
-            Eyebrow:     "The Restaurant",
-            Title:       "Dine With Intention",
-            Description: "Steaks on hot stone, kudu fillet, hand-made burgers and charcuterie boards — served indoors or on the open terrace.",
-            Image:       "images/business/pillar-restaurant.jpg",
-            Alt:         "The Butcher's Mermaid restaurant dining room",
-            Href:        "/restaurant",
-            LinkLabel:   "See the restaurant",
-            Reverse:     true),
-
-        new(
-            Eyebrow:     "Deli & Bar",
-            Title:       "Take the Good Stuff Home",
-            Description: "Artisan cheeses, cured meats, organic produce and boutique wines — with an off-consumption licence so you can take a bottle home.",
-            Image:       "images/business/pillar-deli-bar.jpg",
-            Alt:         "The Butcher's Mermaid deli and bar counter",
-            Href:        "/deli",
-            LinkLabel:   "Visit the deli",
-            Reverse:     false),
-    };
-}

@@ -1,0 +1,178 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+@* While the cinematic opening plays the site nav stays hidden; landing.js reveals it (adds html.tbm-nav-on).
+   The 15s animation is a safety net so the nav can never stay hidden if scripts fail. *@
+<HeadContent>
+    <style>
+        html:not(.tbm-nav-on) .site-nav { opacity: 0; pointer-events: none; animation: tbm-nav-in 0s linear 15s forwards; }
+        html .site-nav { transition: opacity 1.2s ease; }
+        @@keyframes tbm-nav-in { to { opacity: 1; pointer-events: auto; } }
+    </style>
+    <noscript>
+        <style>
+            .site-nav { opacity: 1 !important; pointer-events: auto !important; }
+            [data-brand], .tbm-txt > * { opacity: 1 !important; visibility: visible !important; }
+            .tbm-stage, .tbm-load, .tbm-hint, .tbm-skip { display: none !important; }
+        </style>
+    </noscript>
+</HeadContent>
+
+<div class="tbm-landing" @ref="_root" data-mode="@(_failed ? "static" : "boot")">
+
+    <div class="tbm-stage" data-stage aria-hidden="true">
+        <canvas class="tbm-gl" data-gl></canvas>
+        <div class="tbm-vig"></div>
+    </div>
+    <div class="tbm-load" aria-hidden="true"><i></i></div>
+
+    <div class="tbm-brand" data-brand>
+        <div class="tbm-brand__inner">
+            <img src="images/brand/logo.svg" alt="The Butcher's Mermaid" class="tbm-brand__logo" width="160" height="160" />
+            <p class="eyebrow">Hout Bay · Cape Town</p>
+            <h1 class="tbm-brand__title">
+                Where the Pasture<br />
+                <em>Meets the Sea</em>
+            </h1>
+            <GoldDivider />
+            <p class="tbm-brand__lead">
+                Premium butchery, upscale restaurant &amp; deli. Pasture-reared meats,
+                house-made charcuterie, and seasonal seafood — all under one roof in Hout Bay.
+            </p>
+            <div class="tbm-brand__actions">
+                <a href="@BusinessInfo.DineplanUrl" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Book a Table</a>
+                <a href="/butchery" class="btn btn-outline">Explore</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="tbm-hint" data-hint aria-hidden="true"><span>Scroll</span><i></i></div>
+    <button type="button" class="tbm-skip" data-skip hidden>Skip intro</button>
+
+    <div class="tbm-story" data-story>
+        <section class="tbm-panel tbm-panel--lead" aria-hidden="true"></section>
+
+        @foreach (var p in Panels)
+        {
+            <section class="tbm-panel tbm-panel--@p.Side" id="@p.Id">
+                <div class="tbm-txt">
+                    <p class="eyebrow">@p.Eyebrow</p>
+                    <h2 class="tbm-title">@p.Title</h2>
+                    <GoldDivider />
+                    <p class="tbm-desc">@p.Description</p>
+                    <a href="@p.Href" class="tbm-link">@p.LinkLabel →</a>
+                    <img src="@p.Image" alt="@p.Alt" class="tbm-static-img" loading="lazy" />
+                </div>
+            </section>
+        }
+
+        <section class="tbm-panel tbm-panel--outro">
+            <div class="tbm-txt">
+                <p class="eyebrow">Hout Bay · Cape Town</p>
+                <div class="tbm-brand__actions">
+                    <a href="@BusinessInfo.DineplanUrl" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Book a Table</a>
+                    <a href="@BusinessInfo.UberEatsUrl" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">Order on Uber Eats</a>
+                </div>
+                <p class="tbm-credits">
+                    3D models via Sketchfab, CC BY 4.0, modified:
+                    &ldquo;Tree Stump 1&rdquo; by Alexandre González Rivas ·
+                    &ldquo;bone-in meat cut 3d model&rdquo; by grodan ·
+                    &ldquo;Cleaver - Butcher's Best Friend&rdquo; by 3dsofsan.
+                </p>
+            </div>
+        </section>
+    </div>
+</div>
+
+@code {
+    private record Panel(
+        string Id,
+        string Side,
+        string Eyebrow,
+        string Title,
+        string Description,
+        string Image,
+        string Alt,
+        string Href,
+        string LinkLabel);
+
+    // Copy and links are the same as the original pillar sections.
+    private static readonly Panel[] Panels =
+    {
+        new(
+            Id:          "the-butchery",
+            Side:        "right",
+            Eyebrow:     "The Butchery",
+            Title:       "Meat of the Highest Provenance",
+            Description: "Wagyu, dry-aged beef, free-range lamb and pork, house-made charcuterie. Sourced with integrity, cut with craft.",
+            Image:       "images/business/pillar-butchery.jpg",
+            Alt:         "Premium cuts at The Butcher's Mermaid butchery counter",
+            Href:        "/butchery",
+            LinkLabel:   "Explore the butchery"),
+
+        new(
+            Id:          "the-restaurant",
+            Side:        "left",
+            Eyebrow:     "The Restaurant",
+            Title:       "Dine With Intention",
+            Description: "Steaks on hot stone, kudu fillet, hand-made burgers and charcuterie boards — served indoors or on the open terrace.",
+            Image:       "images/business/pillar-restaurant.jpg",
+            Alt:         "The Butcher's Mermaid restaurant dining room",
+            Href:        "/restaurant",
+            LinkLabel:   "See the restaurant"),
+
+        new(
+            Id:          "deli-and-bar",
+            Side:        "center",
+            Eyebrow:     "Deli & Bar",
+            Title:       "Take the Good Stuff Home",
+            Description: "Artisan cheeses, cured meats, organic produce and boutique wines — with an off-consumption licence so you can take a bottle home.",
+            Image:       "images/business/pillar-deli-bar.jpg",
+            Alt:         "The Butcher's Mermaid deli and bar counter",
+            Href:        "/deli",
+            LinkLabel:   "Visit the deli"),
+    };
+
+    private readonly string _id = Guid.NewGuid().ToString("N");
+    private ElementReference _root;
+    private IJSObjectReference? _module;
+    private bool _rendered;
+    private bool _failed;
+
+    // The markup never changes after the first render (landing.js owns the DOM from then on),
+    // so Blazor must not re-render it, except once to switch to the static layout if the script fails.
+    protected override bool ShouldRender() => !_rendered || _failed;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _rendered = true;
+
+        try
+        {
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "/js/landing/landing.js");
+            await _module.InvokeVoidAsync("init", _root, _id);
+        }
+        catch (JSDisconnectedException) { }
+        catch (OperationCanceledException) { }
+        catch (JSException)
+        {
+            _failed = true;
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is null) return;
+        try
+        {
+            await _module.InvokeVoidAsync("dispose", _id);
+            await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
+        catch (ObjectDisposedException) { }
+        catch (OperationCanceledException) { }
+    }
+}
