@@ -6,6 +6,7 @@
  *
  * Modes (root.dataset.mode): boot -> loading -> cinematic, or static (reduced motion / no WebGL / load failure).
  * three.js r128 and GSAP are vendored in /lib and loaded on demand, so other pages never pay for them.
+ * Add ?tbmdebug to the URL to log the lifecycle to the console.
  */
 
 const MODELS = '/models/';
@@ -36,7 +37,9 @@ function loadLibs() {
 /* ---------- instance registry (the component identifies itself by id, not by DOM node) ---------- */
 const instances = new Map();
 export function init(root, id) {
-  const inst = create(root);
+  // only one landing can exist: clean up anything left over from a previous visit first
+  for (const [k, old] of [...instances]) { instances.delete(k); old.dispose(); }
+  const inst = create(root, id, () => instances.delete(id));
   instances.set(id, inst);
   inst.start().catch(e => { console.warn('[landing] using the static layout:', e); inst.fallback(); });
 }
@@ -45,12 +48,14 @@ export function dispose(id) {
   if (inst) { instances.delete(id); inst.dispose(); }
 }
 
-function create(root) {
+function create(root, id, forget) {
   const q = s => root.querySelector(s);
   const el = { stage: q('[data-stage]'), gl: q('[data-gl]'), brand: q('[data-brand]'), hint: q('[data-hint]'), skip: q('[data-skip]'), story: q('[data-story]') };
   const html = document.documentElement, R = Math.random;
   const RM = matchMedia('(prefers-reduced-motion:reduce)').matches;
   const QS = new URLSearchParams(location.search);
+  const DBG = QS.has('tbmdebug');
+  const dbg = (...a) => { if (DBG) console.log('[landing ' + id.slice(0, 6) + ']', ...a); };
   const mobile = Math.min(innerWidth, innerHeight) < 700;
 
   let dead = false, D = 1, Dd = 0, done = false, inView = true;
@@ -58,32 +63,50 @@ function create(root) {
   const offs = [], live = [], ticks = new Set();
   const on = (t, e, f, o) => { t.addEventListener(e, f, o); offs.push(() => t.removeEventListener(e, f, o)); };
   const track = a => (live.push(a), a);
-  const setMode = m => { root.dataset.mode = m; };
+  const setMode = m => { dbg('mode ->', m); root.dataset.mode = m; };
   const navOn = () => html.classList.add('tbm-nav-on');
-  const lock = v => { html.style.overflow = v ? 'hidden' : ''; };
+  // scroll lock: only released by the instance that took it
+  let locked = false;
+  const lock = v => {
+    if (v) { locked = true; html.style.overflow = 'hidden'; }
+    else if (locked) { locked = false; html.style.overflow = ''; }
+  };
+  // the site sets scroll-behavior:smooth, which fights scrubbed scroll animation and slows scrollTo
+  let sbPrev = null;
+  const noSmooth = () => { if (sbPrev === null) { sbPrev = html.style.scrollBehavior; html.style.scrollBehavior = 'auto'; } };
+  const restoreSmooth = () => { if (sbPrev !== null) { html.style.scrollBehavior = sbPrev; sbPrev = null; } };
   const tick = f => { gsap.ticker.add(f); ticks.add(f); return f; };
   const untick = f => { gsap.ticker.remove(f); ticks.delete(f); };
 
   function hasGL() {
-    try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); }
-    catch (e) { return false; }
+    try {
+      const c = document.createElement('canvas'), g = c.getContext('webgl2') || c.getContext('webgl');
+      if (!g) return false;
+      const x = g.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); // do not leak the probe context
+      return true;
+    } catch (e) { return false; }
   }
 
   /* ---------- static layout: reduced motion, no WebGL, or anything failing to load ---------- */
   function teardownGL() {
-    if (scene) scene.traverse(o => {
-      if (o.geometry) o.geometry.dispose();
-      const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
-      ms.forEach(m => { ['map', 'normalMap', 'roughnessMap', 'metalnessMap'].forEach(k => m[k] && m[k].dispose()); m.dispose(); });
-    });
+    if (key && key.shadow && key.shadow.map) key.shadow.map.dispose();
+    if (scene) {
+      if (scene.environment) scene.environment.dispose();
+      scene.traverse(o => {
+        if (o.geometry) o.geometry.dispose();
+        const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+        ms.forEach(m => { ['map', 'normalMap', 'roughnessMap', 'metalnessMap'].forEach(k => m[k] && m[k].dispose()); m.dispose(); });
+      });
+    }
     if (pmrem) pmrem.dispose();
     if (renderer) { renderer.dispose(); renderer.forceContextLoss(); }
     scene = pmrem = renderer = null;
   }
   function fallback() {
     if (dead) return;
+    dbg('fallback to static layout');
     untickAll(); teardownGL();
-    setMode('static'); lock(false); navOn();
+    setMode('static'); lock(false); restoreSmooth(); navOn();
     if (el.skip) el.skip.hidden = true;
   }
   function untickAll() { if (window.gsap) ticks.forEach(f => gsap.ticker.remove(f)); ticks.clear(); }
@@ -270,6 +293,7 @@ function create(root) {
   /* ---------- per-frame render (on demand: only when something changed) ---------- */
   function frame() {
     if (dead || !renderer) return;
+    if (!root.isConnected) { dbg('root left the DOM: cleaning up'); dispose(); return; } // Blazor never told us
     mx += (tx - mx) * .05; my += (ty - my) * .05;
     if (Math.abs(tx - mx) > .0004 || Math.abs(ty - my) > .0004) D = 1;
     jigUpdate();
@@ -357,7 +381,7 @@ function create(root) {
     done = true; lock(false); navOn(); el.skip.hidden = true;
     track(gsap.to(el.hint, { opacity: 1, duration: 1 }));
   }
-  function finish() { if (done) return; unlock(); build(); }
+  function finish() { if (done) return; dbg('intro finished'); unlock(); build(); }
 
   /* ---------- scroll-controlled story: the block travels between the three panels, then leaves ---------- */
   function build() {
@@ -390,7 +414,7 @@ function create(root) {
     initIntro();
     el.skip.hidden = false; el.skip.onclick = () => T.timeScale(25);
     tick(frame);
-    io = new IntersectionObserver(es => { inView = es[0].isIntersecting; D = 1; }, { threshold: 0 }); io.observe(el.story);
+    io = new IntersectionObserver(es => { inView = es[0].isIntersecting; D = 1; dbg('story in view:', inView); }, { threshold: 0 }); io.observe(el.story);
     if (matchMedia('(pointer:fine)').matches) on(window, 'pointermove', e => { tx = e.clientX / innerWidth - .5; ty = e.clientY / innerHeight - .5; D = 1; });
     let rt, lw = innerWidth, lh = innerHeight;
     on(window, 'resize', () => {
@@ -409,28 +433,32 @@ function create(root) {
       setTimeout(() => { const s = st.scrollTrigger; scrollTo(0, s.start + parseFloat(QS.get('scroll')) * (s.end - s.start)); D = 1; setTimeout(() => window.__tbmReady = 1, 900); }, 2500);
       return;
     }
-    setTimeout(() => { if (!dead) T.play(); }, 400);
+    setTimeout(() => { if (!dead) { dbg('intro starts'); T.play(); } }, 400);
   }
 
   async function start() {
+    dbg('start | reduced motion:', RM, '| webgl:', hasGL(), '| mobile:', mobile);
     if (RM || QS.has('static') || !hasGL()) { fallback(); return; }
-    setMode('loading'); lock(true); scrollTo(0, 0);
+    setMode('loading'); noSmooth(); lock(true); scrollTo({ top: 0, left: 0, behavior: 'instant' });
     // start downloading the models while the libraries load
     const pre = Object.fromEntries(Object.keys(DEF).map(k => [k, fetchModel(k)]));
     Object.values(pre).forEach(p => p.catch(() => {}));
-    await loadLibs(); if (dead) return;
+    await loadLibs(); dbg('libraries ready'); if (dead) return;
     const need = ['steak', 'block', 'cleaver'];
     const A = {};
     await Promise.all(Object.keys(DEF).map(async k => {
       try { A[k] = await parseModel(await pre[k]); }
       catch (e) { if (need.includes(k)) throw e; }
     }));
+    dbg('models ready');
     if (dead) return;
+    if (!root.isConnected) { dbg('root left the DOM before the scene was built'); dispose(); return; }
     buildScene(A); go();
   }
 
   function dispose() {
-    dead = true;
+    if (dead) return;
+    dead = true; dbg('dispose');
     offs.forEach(f => f());
     if (window.gsap) {
       ticks.forEach(f => gsap.ticker.remove(f)); ticks.clear();
@@ -439,7 +467,8 @@ function create(root) {
       if (st) { st.scrollTrigger && st.scrollTrigger.kill(); st.kill(); }
     }
     if (io) io.disconnect();
-    teardownGL(); lock(false);
+    teardownGL(); lock(false); restoreSmooth();
+    forget();
   }
 
   return { start, fallback, dispose };
