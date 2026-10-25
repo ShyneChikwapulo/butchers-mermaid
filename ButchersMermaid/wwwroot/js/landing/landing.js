@@ -417,6 +417,18 @@ function create(root, id, forget) {
       .to(S, { orbit: .05, y: 2.6, duration: 1, ease: 'power2.out' }, 3).to(el.stage, { autoAlpha: 0, duration: .6, ease: 'none' }, 3.4);
   }
 
+  /* compile every shader and upload every texture now, behind the loading bar, instead of mid-shot */
+  function warmUp() {
+    const t0 = performance.now();
+    const vis = [steak.visible, cleaver.visible, blockI.visible, blockC ? blockC.visible : false], k0 = key.intensity;
+    steak.visible = cleaver.visible = true; if (blockC) blockC.visible = true; blockI.visible = true;
+    key.intensity = .01; chips.count = 1;
+    try { renderer.shadowMap.autoUpdate = true; renderer.render(scene, camera); } catch (e) { dbg('warm-up failed', e); }
+    key.intensity = k0; chips.count = 0;
+    steak.visible = vis[0]; cleaver.visible = vis[1]; blockI.visible = vis[2]; if (blockC) blockC.visible = vis[3];
+    D = 1; dbg('warm-up took', Math.round(performance.now() - t0), 'ms');
+  }
+
   /* ---------- go: everything is loaded ---------- */
   function go() {
     setMode('cinematic');
@@ -474,7 +486,7 @@ function create(root, id, forget) {
     dbg('models ready');
     if (dead) return;
     if (!root.isConnected) { dbg('root left the DOM before the scene was built'); dispose(); return; }
-    buildScene(A); go();
+    buildScene(A); warmUp(); go();
   }
 
   function dispose() {
