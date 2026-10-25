@@ -417,16 +417,25 @@ function create(root, id, forget) {
       .to(S, { orbit: .05, y: 2.6, duration: 1, ease: 'power2.out' }, 3).to(el.stage, { autoAlpha: 0, duration: .6, ease: 'none' }, 3.4);
   }
 
-  /* compile every shader and upload every texture now, behind the loading bar, instead of mid-shot */
-  function warmUp() {
-    const t0 = performance.now();
-    const vis = [steak.visible, cleaver.visible, blockI.visible, blockC ? blockC.visible : false], k0 = key.intensity;
-    steak.visible = cleaver.visible = true; if (blockC) blockC.visible = true; blockI.visible = true;
-    key.intensity = .01; chips.count = 1;
-    try { renderer.shadowMap.autoUpdate = true; renderer.render(scene, camera); } catch (e) { dbg('warm-up failed', e); }
-    key.intensity = k0; chips.count = 0;
-    steak.visible = vis[0]; cleaver.visible = vis[1]; blockI.visible = vis[2]; if (blockC) blockC.visible = vis[3];
-    D = 1; dbg('warm-up took', Math.round(performance.now() - t0), 'ms');
+  /* compile every shader and upload every texture behind the loading bar, a little per frame, instead of mid-shot */
+  async function warmUp() {
+    const t0 = performance.now(), k0 = key.intensity;
+    const parts = [blockI, blockC, steak, cleaver].filter(Boolean), vis = parts.map(p => p.visible), cc = chips.count;
+    const nextFrame = () => new Promise(r => { const to = setTimeout(r, 120); requestAnimationFrame(() => { clearTimeout(to); r(); }); });
+    const tex = new Set();
+    scene.traverse(o => { if (o.isMesh && o.material) [].concat(o.material).forEach(m => ['map', 'normalMap', 'roughnessMap', 'metalnessMap'].forEach(k => m[k] && tex.add(m[k]))); });
+    key.intensity = .01;
+    try {
+      for (const t of tex) { renderer.initTexture(t); await nextFrame(); if (dead) return; }      // one texture upload per frame
+      for (const p of parts) {                                                                    // one object's shaders per frame
+        parts.forEach(q => q.visible = (q === p));
+        chips.count = p === steak ? 1 : 0;
+        renderer.shadowMap.autoUpdate = true; renderer.render(scene, camera);
+        await nextFrame(); if (dead) return;
+      }
+    } catch (e) { dbg('warm-up failed', e); }
+    parts.forEach((p, i) => p.visible = vis[i]); chips.count = cc; key.intensity = k0; D = 1;
+    dbg('warm-up took', Math.round(performance.now() - t0), 'ms (staged)');
   }
 
   /* ---------- go: everything is loaded ---------- */
@@ -486,7 +495,7 @@ function create(root, id, forget) {
     dbg('models ready');
     if (dead) return;
     if (!root.isConnected) { dbg('root left the DOM before the scene was built'); dispose(); return; }
-    buildScene(A); warmUp(); go();
+    buildScene(A); await warmUp(); if (dead) return; go();
   }
 
   function dispose() {
