@@ -149,6 +149,13 @@ function create(root, id, forget) {
   const S = { z: 7, y: 2.5, orbit: 0, sx: 0, sy: 0 };
   const JU = { uSq: { value: 0 }, uW: { value: 0 } }, JE = [];
   let mx = 0, my = 0, tx = 0, ty = 0, M = null;
+  /* adaptive resolution: starts at the normal cap (or the level remembered for this device), drops straight to the level that
+     should hit ~22 ms when animated frames are slow, never below 1.25, and only climbs back to just under a level that failed */
+  const dprCapFor = () => Math.min(devicePixelRatio, innerWidth < 800 ? 1.5 : 1.75);
+  const DPR_FLOOR = 1.25, DPR_KEY = 'tbm-dpr';
+  let dprCap = 1, dprNow = 0, dprMax = 0, lastAnim = 0, gSum = 0, gN = 0, gGood = 0, gHold = 0;
+  const dprLoad = () => { try { const o = JSON.parse(localStorage.getItem(DPR_KEY) || 'null'); return o && Math.abs(o.cap - dprCapFor()) < .01 ? o.dpr : 0; } catch (e) { return 0; } };
+  const dprSave = () => { try { localStorage.setItem(DPR_KEY, JSON.stringify({ dpr: dprNow, cap: dprCap })); } catch (e) { } };
 
   function layout() {
     const w = innerWidth, h = innerHeight, asp = w / h, mob = asp < .9;
@@ -156,7 +163,10 @@ function create(root, id, forget) {
   }
   function resize() {
     if (!renderer) return;
-    renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 800 ? 1.5 : 1.75));
+    dprCap = dprCapFor();
+    if (!dprNow) { dprNow = Math.min(dprCap, Math.max(DPR_FLOOR, dprLoad() || dprCap)); dprMax = dprCap; }
+    dprNow = Math.min(dprNow, dprCap); dprMax = Math.min(dprMax, dprCap);
+    renderer.setPixelRatio(dprNow);
     renderer.setSize(innerWidth, innerHeight, false);
     camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); D = 1;
   }
@@ -304,12 +314,34 @@ function create(root, id, forget) {
     if (!inView || document.hidden) return;
     dustUpdate();
     if (!D && !Dd) return;
-    renderer.shadowMap.autoUpdate = !!D; D = 0; Dd = 0;
+    const animated = !!D;
+    renderer.shadowMap.autoUpdate = animated; D = 0; Dd = 0;
     const a = S.orbit + mx * .16;
     camera.position.set(Math.sin(a) * S.z + S.sx, S.y - my * .4 + S.sy, Math.cos(a) * S.z); camera.lookAt(0, .6, 0);
     key.target.position.copy(rig.position); cone.position.copy(key.position); cone.lookAt(key.target.position);
     cone.material.uniforms.uI.value = .10 * Math.min(1, key.intensity / 5.9);
     renderer.render(scene, camera);
+    // resolution governor: judge only consecutive animated frames, ignore one-off hitches
+    const now = performance.now();
+    if (animated) {
+      const dt = now - lastAnim; lastAnim = now;
+      if (dt < 100) { gSum += dt; gN++; }
+      if (gN >= 24) {
+        const mean = gSum / gN; gSum = 0; gN = 0;
+        if (gHold > 0) gHold--;
+        else if (mean > 26 && dprNow > DPR_FLOOR) {
+          const want = Math.round(dprNow * Math.sqrt(22 / mean) * 20) / 20;      // frame time scales with pixel count
+          dprMax = Math.min(dprMax, dprNow - .1);
+          dprNow = Math.max(DPR_FLOOR, Math.min(dprNow - .1, want)); gGood = 0; gHold = 4; applyDpr('down', mean);
+        } else if (mean < 15 && dprNow < dprMax) {
+          if (++gGood >= 3) { dprNow = Math.min(dprMax, +(dprNow + .15).toFixed(2)); gGood = 0; gHold = 4; applyDpr('up', mean); }
+        } else gGood = 0;
+      }
+    } else lastAnim = 0;
+  }
+  function applyDpr(dir, mean) {
+    dbg('resolution', dir, '->', dprNow, '(mean frame', mean.toFixed(1), 'ms)');
+    renderer.setPixelRatio(dprNow); renderer.setSize(innerWidth, innerHeight, false); dprSave(); D = 1;
   }
 
   /* ---------- the opening: flickering light, thrown steak, cleaver strike, block slides aside ---------- */
