@@ -392,27 +392,25 @@ function create(root, id, forget) {
     const t = DH.t; steak.position.set(FP.x, FP.y + .075 * Math.sin(Math.PI * t) * (1 - t) * (1 - t * .3), FP.z);
     steak.rotation.set(.025 * Math.sin(Math.PI * 2 * t) * (1 - t), .43, 0); D = 1;
   }
+  /* the opening is short now: the scene is already composed (steak on the block, cleaver in the cut);
+     the light flickers on, the camera eases in a little and the title fades up */
+  function showFinalScene() {
+    steak.visible = true; steak.position.copy(FP); steak.rotation.set(0, .43, 0);
+    cleaver.visible = true; cleaver.position.set(CX, CY, -.75); cleaver.rotation.z = CZ;
+    if (blockC) { blockI.visible = false; blockC.visible = true; }
+  }
   function initIntro() {
-    M = layout(); rig.position.set(0, M.hy, 0); S.z = M.z + 2.6; gsap.set(el.brand, { autoAlpha: 0, y: 24 });
+    M = layout(); showFinalScene();
+    rig.position.set(M.hx, M.hy, 0); S.z = M.z + 2.0; key.intensity = 0;
+    gsap.set(el.brand, { autoAlpha: 0, y: 24 });
     T.to(key, { intensity: 1.4, duration: .05, ease: 'none' }, .55).to(key, { intensity: 0, duration: .06, ease: 'none' }, .68)
       .to(key, { intensity: 3.6, duration: .05, ease: 'none' }, 1.0).to(key, { intensity: .5, duration: .09, ease: 'none' }, 1.12)
       .to(key, { intensity: 2.2, duration: .04, ease: 'none' }, 1.42).to(key, { intensity: 0, duration: .05, ease: 'none' }, 1.52)
-      .to(key, { intensity: 5.9, duration: 1.5, ease: 'power2.out' }, 1.78).to(S, { z: M.z, y: 2.5, duration: 8, ease: 'power1.inOut' }, 0);
-    T.call(() => { steak.visible = true; dropFn(); }, null, 2.7)
-      .fromTo(DR, { t: 0 }, { t: 1, duration: 1.05, ease: 'none', immediateRender: false, onUpdate: dropFn }, 2.7)
-      .call(() => kick(.05), null, 3.75)
-      .fromTo(DH, { t: 0 }, { t: 1, duration: .55, ease: 'none', immediateRender: false, onUpdate: hopFn }, 3.75)
-      .call(() => kick(.07), null, 4.15)
-      .call(() => { steak.position.copy(FP); steak.rotation.set(0, .43, 0); }, null, 4.32);
-    T.call(() => { cleaver.visible = true; }, null, 5.5)
-      .fromTo(cleaver.position, { x: CX + 1.4, y: 1.4, z: -.75 }, { x: CX + 1.8, y: 2.1, duration: .9, ease: 'power2.out' }, 5.5)
-      .fromTo(cleaver.rotation, { z: -.2 }, { z: -.75, duration: .9, ease: 'power2.out' }, 5.5)
-      .to(cleaver.position, { x: CX, y: CY, duration: .17, ease: 'power4.in' }, 6.55)
-      .to(cleaver.rotation, { z: CZ, duration: .17, ease: 'power4.in' }, 6.55)
-      .call(impact, null, 6.72)
-      .to(rig.position, { x: M.hx, y: M.hy, duration: 1.8, ease: 'power3.inOut' }, 8.2)
-      .to(el.brand, { autoAlpha: 1, y: 0, duration: 1.8, ease: 'power2.out' }, 8.8);
+      .to(key, { intensity: 5.9, duration: 1.5, ease: 'power2.out' }, 1.78)
+      .to(S, { z: M.z, y: 2.5, duration: 4.2, ease: 'power1.inOut' }, 0)
+      .to(el.brand, { autoAlpha: 1, y: 0, duration: 1.6, ease: 'power2.out' }, 2.3);
   }
+
   /* returning visitors: the finished composition with a short light-up instead of the full opening */
   function returnEntrance() {
     steak.visible = true; steak.position.copy(FP); steak.rotation.set(0, .43, 0);
