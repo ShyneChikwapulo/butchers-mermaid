@@ -179,11 +179,11 @@ function create(root, id, forget) {
       if (old && old.name === 'cutwall') m = new THREE.MeshStandardMaterial({ color: old.color, roughness: .88, metalness: 0 });
       else {
         const P0 = Object.assign({ map: Mo.T.base, normalMap: Mo.T.normal || null, roughness: 1, metalness: 0 }, o);
-        if (jig) Object.assign(P0, { clearcoat: .5, clearcoatRoughness: .12, emissive: new THREE.Color(0x2a0508), emissiveIntensity: .12 });
+        if (jig) Object.assign(P0, { clearcoat: .3, clearcoatRoughness: .2, emissive: new THREE.Color(0x2a0508), emissiveIntensity: .12 });
         m = jig ? new THREE.MeshPhysicalMaterial(P0) : new THREE.MeshStandardMaterial(P0);
         if (jig) m.normalScale.set(1.25, 1.25);
         if (Mo.T.mr) { m.roughnessMap = m.metalnessMap = Mo.T.mr; m.metalness = 1; }
-        if (jig) jiggleMat(m);
+        if (jig) steakMat(m);
       }
       n.material = m; n.castShadow = n.receiveShadow = true; n.frustumCulled = false;
     });
@@ -205,6 +205,14 @@ function create(root, id, forget) {
       const env = Math.exp(-3.2 * t); c += e.A * env * Math.cos(6.2832 * 5.2 * t); w += e.A * env * Math.sin(6.2832 * 7.5 * t);
     }
     JU.uSq.value = c; JU.uW.value = w; D = 1;
+  }
+
+  /* steak surface: fibre-like roughness variation so the shine breaks up instead of reading as one glossy coat */
+  function steakMat(m) {
+    m.onBeforeCompile = sh => {
+      sh.fragmentShader = 'float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }\n' + sh.fragmentShader
+        .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n{ vec2 fu = vUv * vec2(1100.0, 170.0); float fib = 0.6 * h21(floor(fu)) + 0.4 * h21(floor(fu * 0.35)); roughnessFactor = roughnessFactor * 0.91 * (0.9 + 0.2 * fib); }');
+    };
   }
 
   /* ---------- build the three.js scene ---------- */
